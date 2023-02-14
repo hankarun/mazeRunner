@@ -198,19 +198,17 @@ void draw(BoardGenerator* generator)
 	}
 }
 
-void drawInfo(int speed)
+void drawInfo(int speed, bool loop)
 {
-	DrawRectangle(10, 10, 250, 163, Fade(SKYBLUE, 0.8f));
-	DrawRectangleLines(10, 10, 250, 163, BLUE);
+	DrawRectangle(10, 10, 250, 123, Fade(SKYBLUE, 0.9f));
+	DrawRectangleLines(10, 10, 250, 123, BLUE);
 
 	DrawText("Keyboard Control:", 20, 20, 10, WHITE);
-	DrawText("F - Finish", 40, 40, 10, WHITE);
-	DrawText("R - Reset", 40, 60, 10, WHITE);
-	DrawText("+ - Speed up", 40, 80, 10, WHITE);
-	DrawText("- - Slow down", 40, 100, 10, WHITE);
-	DrawText("W - Increase Size", 40, 120, 10, WHITE);
-	DrawText("Q - Decrease Size", 40, 140, 10, WHITE);
-	DrawText(TextFormat("Size: %.0f %.0f Speed: %d", width, height, speed), 40, 160, 10, WHITE);
+	DrawText("F - Finish / R - Reset", 40, 40, 10, WHITE);
+	DrawText("+ - Speed up / - - Slow down", 40, 60, 10, WHITE);
+	DrawText("Size W - Increase  / Q - Decrease", 40, 80, 10, WHITE);
+	DrawText("H - Show/Hide L - Loop On/Off", 40, 100, 10, WHITE);
+	DrawText(TextFormat("Size: %.0f %.0f Speed: %d, Loop: %d", width, height, speed, loop), 40, 120, 10, WHITE);
 }
 
 int main(int argc, char* argv[])
@@ -225,13 +223,24 @@ int main(int argc, char* argv[])
 	boardGenerator.init(&board);
 
 	int speed = 1;
+	bool loop = false;
+	bool showInfo = true;
 
 	while (!WindowShouldClose())
 	{
+		if (loop && boardGenerator.isFinished())
+		{
+			board = Board(width, height);
+			boardGenerator.init(&board);
+		}
+
 		int key = GetKeyPressed();
 
 		while (key > 0)
 		{
+			if (key == KEY_H)
+				showInfo = !showInfo;
+
 			if (key == KEY_F)
 			{
 				if (boardGenerator.isFinished())
@@ -242,6 +251,10 @@ int main(int argc, char* argv[])
 
 				boardGenerator.finish(&board);
 			}
+
+			if (key == KEY_L)
+				loop = !loop;
+
 			if (key ==  KEY_KP_ADD)
 				speed += 1;
 			if (key ==  KEY_KP_SUBTRACT)
@@ -284,7 +297,8 @@ int main(int argc, char* argv[])
 		draw(&board);
 		draw(&boardGenerator);
 
-		drawInfo(speed);
+		if (showInfo)
+			drawInfo(speed, loop);
 
 
 		EndDrawing();
