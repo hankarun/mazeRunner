@@ -12,8 +12,9 @@
 int screenWidth = 800;
 int screenHeight = 800;
 
-float width = 50;
 float height = 50;
+float width = 50;
+
 
 struct Cell
 {
@@ -24,124 +25,148 @@ struct Cell
 	// 2   3
 	// . 4 .
 	std::array<bool, 4> walls = { true, true, true, true };
-};
 
-std::vector<Cell> cells;
-std::stack<Cell*> traverse;
-Cell* currrent = nullptr;
-
-void init()
-{
-	cells.clear();
-
-	for (int j = 0; j < height; ++j)
+	// . 0 .
+	// 1   2
+	// . 3 .
+	void removeWalls(Cell* n)
 	{
-		for (int i = 0; i < width; ++i)
-
+		if (x == n->x - 1)
 		{
-			Cell cell;
-			cell.x = i;
-			cell.y = j;
-			cells.push_back(cell);
+			walls[2] = false;
+			n->walls[1] = false;
+		}
+
+		if (n->x == x - 1)
+		{
+			walls[1] = false;
+			n->walls[2] = false;
+		}
+
+		if (y == n->y - 1)
+		{
+			walls[3] = false;
+			n->walls[0] = false;
+		}
+
+		if (n->y == y - 1)
+		{
+			walls[0] = false;
+			n->walls[3] = false;
 		}
 	}
-	cells[0].visited = true;
-	traverse.push(&cells[0]);
-}
+};
 
-std::vector<Cell*> getUnvisitedNeighBours(Cell* p)
+struct Board
 {
-	std::vector<Cell*> neighbours;
-
-	// north (x, y -1)
-	if (p->y > 0)
+	Board(int width, int height)
+		: width(width), height(height)
 	{
-		int index = p->x + (p->y - 1) * width;
-		if (!cells.at(index).visited)
-			neighbours.push_back(&cells[index]);
+		for (int j = 0; j < height; ++j)
+		{
+			for (int i = 0; i < width; ++i)
+			{
+				Cell cell;
+				cell.x = i;
+				cell.y = j;
+				cells.push_back(cell);
+			}
+		}
 	}
 
-	// south (x, y + 1)
-	if (p->y < (height - 1))
+	std::vector<Cell*> getUnvisitedNeighBours(Cell* p)
 	{
-		int index = p->x + (p->y + 1)* width;
-		if (!cells.at(index).visited)
-			neighbours.push_back(&cells[index]);
+		std::vector<Cell*> neighbours;
+
+		// north (x, y -1)
+		if (p->y > 0)
+		{
+			int index = p->x + (p->y - 1) * width;
+			if (!cells.at(index).visited)
+				neighbours.push_back(&cells[index]);
+		}
+
+		// south (x, y + 1)
+		if (p->y < (height - 1))
+		{
+			int index = p->x + (p->y + 1) * width;
+			if (!cells.at(index).visited)
+				neighbours.push_back(&cells[index]);
+		}
+
+		// east (x - 1, y)
+		if (p->x > 0)
+		{
+			int index = p->x - 1 + p->y * width;
+			if (!cells.at(index).visited)
+				neighbours.push_back(&cells[index]);
+		}
+
+		// west (x + 1, y)
+		if (p->x < (width - 1))
+		{
+			int index = p->x + 1 + p->y * width;
+			if (!cells.at(index).visited)
+				neighbours.push_back(&cells[index]);
+		}
+
+		return neighbours;
 	}
 
-	// east (x - 1, y)
-	if (p->x > 0)
-	{
-		int index = p->x - 1 + p->y * width;
-		if (!cells.at(index).visited)
-			neighbours.push_back(&cells[index]);
-	}
+	std::vector<Cell> cells;
+	float width = 50;
+	float height = 50;
+};
 
-	// west (x + 1, y)
-	if (p->x < (width - 1))
-	{
-		int index = p->x + 1 + p->y * width;
-		if (!cells.at(index).visited)
-			neighbours.push_back(&cells[index]);
-	}
 
-	return neighbours;
-}
-
-// . 0 .
-// 1   2
-// . 3 .
-void removeWalls(Cell* c, Cell* n)
+struct BoardGenerator
 {
-	if (c->x == n->x - 1)
+	std::stack<Cell*> traverse;
+	Cell* currrent = nullptr;
+
+	bool isFinished() const
 	{
-		c->walls[2] = false;
-		n->walls[1] = false;
+		return traverse.empty();
 	}
 
-	if (n->x == c->x - 1)
+	void finish(Board* board)
 	{
-		c->walls[1] = false;
-		n->walls[2] = false;
+		while (!traverse.empty())
+			update(board);
 	}
 
-	if (c->y == n->y - 1)
+	void init(Board* board)
 	{
-		c->walls[3] = false;
-		n->walls[0] = false;
+		traverse = std::stack<Cell*>();
+		board->cells[0].visited = true;
+		traverse.push(&board->cells[0]);
 	}
 
-	if (n->y == c->y - 1)
+	void update(Board* board)
 	{
-		c->walls[0] = false;
-		n->walls[3] = false;
+		if (traverse.empty())
+			return;
+		currrent = traverse.top();
+		traverse.pop();
+		auto neighBours = board->getUnvisitedNeighBours(currrent);
+		if (!neighBours.empty())
+		{
+			traverse.push(currrent);
+			int count = neighBours.size();
+			int lucky = rand() % count;
+			auto nextCell = neighBours[lucky];
+			nextCell->visited = true;
+			currrent->removeWalls(nextCell);
+			traverse.push(nextCell);
+		}
 	}
-}
+};
 
-void update()
-{
-	if (traverse.empty())
-		return;
-	currrent = traverse.top();
-	traverse.pop();
-	auto neighBours = getUnvisitedNeighBours(currrent);
-	if (!neighBours.empty())
-	{
-		traverse.push(currrent);
-		int count = neighBours.size();
-		int lucky = rand() % count;
-		auto nextCell = neighBours[lucky];
-		nextCell->visited = true;
-		removeWalls(currrent, nextCell);
-		traverse.push(nextCell);
-	}
-}
-
-void draw()
+void draw(Board* board)
 {
 	float cellWidth = screenWidth / width;
 	float cellHeight = screenHeight / height;
-	for (const auto& cell : cells)
+	for (const auto& cell : board->cells)
 	{
 		float x = cell.x * cellWidth;
 		float y = cell.y * cellHeight;
@@ -157,22 +182,47 @@ void draw()
 		if (cell.walls[3])
 			DrawLine(x, y + cellWidth, x + cellWidth, y + cellWidth, BLACK);
 	}
-	if (!traverse.empty())
+
+}
+
+void draw(BoardGenerator* generator)
+{
+	float cellWidth = screenWidth / width;
+	float cellHeight = screenHeight / height;
+	if (!generator->traverse.empty())
 	{
-		auto top = traverse.top();
+		auto top = generator->traverse.top();
 		float x = top->x * cellWidth;
 		float y = top->y * cellHeight;
 		DrawRectangle(x, y, cellWidth, cellHeight, GREEN);
 	}
 }
 
-int main()
+void drawInfo(int speed)
 {
-	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_HIGHDPI);
+	DrawRectangle(10, 10, 250, 163, Fade(SKYBLUE, 0.8f));
+	DrawRectangleLines(10, 10, 250, 163, BLUE);
+
+	DrawText("Keyboard Control:", 20, 20, 10, WHITE);
+	DrawText("F - Finish", 40, 40, 10, WHITE);
+	DrawText("R - Reset", 40, 60, 10, WHITE);
+	DrawText("+ - Speed up", 40, 80, 10, WHITE);
+	DrawText("- - Slow down", 40, 100, 10, WHITE);
+	DrawText("W - Increase Size", 40, 120, 10, WHITE);
+	DrawText("Q - Decrease Size", 40, 140, 10, WHITE);
+	DrawText(TextFormat("Size: %.0f %.0f Speed: %d", width, height, speed), 40, 160, 10, WHITE);
+}
+
+int main(int argc, char* argv[])
+{
+	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
 	InitWindow(screenWidth, screenHeight, "MazeRunner");
 	SetTargetFPS(60);
 
-	init();
+	Board board(width, height);
+	BoardGenerator boardGenerator;
+
+	boardGenerator.init(&board);
 
 	int speed = 1;
 
@@ -184,12 +234,13 @@ int main()
 		{
 			if (key == KEY_F)
 			{
-				if (traverse.empty())
+				if (boardGenerator.isFinished())
 				{
-					init();
+					board = Board(width, height);
+					boardGenerator.init(&board);
 				}
-				while (!traverse.empty())
-					update();
+
+				boardGenerator.finish(&board);
 			}
 			if (key ==  KEY_KP_ADD)
 				speed += 1;
@@ -197,32 +248,44 @@ int main()
 				speed -= 1;
 			if (key == KEY_R)
 			{
-				init();
+				board = Board(width, height);
+				boardGenerator.init(&board);
 				speed = 1;
 			}
+
+			if (key == KEY_Q)
+			{
+				width += 10;
+				height += 10;
+				board = Board(width, height);
+				boardGenerator.init(&board);
+			}
+
+			if (key == KEY_W)
+			{
+				width -= 10;
+				height -= 10;
+				width = std::max(10.0f, width);
+				height = std::max(10.0f, height);
+				board = Board(width, height);
+				boardGenerator.init(&board);
+			}
+
 			key = GetKeyPressed();
 		}
-
-
 
 		speed = std::max(1, speed);
 
 		for(int i = 0; i < speed; ++i)
-			update();
+			boardGenerator.update(&board);
 
 		BeginDrawing();
 		ClearBackground(DARKGRAY);
-		draw();
+		draw(&board);
+		draw(&boardGenerator);
 
-		DrawRectangle(10, 10, 250, 133, Fade(SKYBLUE, 0.8f));
-		DrawRectangleLines(10, 10, 250, 133, BLUE);
+		drawInfo(speed);
 
-		DrawText("Keyboard Control:", 20, 20, 10, WHITE);
-		DrawText("F - Finish", 40, 40, 10, WHITE);
-		DrawText("R - Reset", 40, 60, 10, WHITE);
-		DrawText("+ - Speed up", 40, 80, 10, WHITE);
-		DrawText("- - Slow down", 40, 100, 10, WHITE);
-		DrawText(TextFormat("Size: %.0f %.0f Speed: %d", width, height, speed), 40, 120, 10, WHITE);
 
 		EndDrawing();
 	}
