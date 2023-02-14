@@ -1,12 +1,15 @@
-#Mazerunner
+# Mazerunner
 
 A simple maze generator, written in c++. For visualization raylib is used.
 
-[ScreenShot][img/screenshot.png]
+![ScreenShot](/img/screenshot.png)
 
-#Build
+# Build
 
 mkdir build
+
 cd build
+
 cmake ..
+
 cmake . --build
