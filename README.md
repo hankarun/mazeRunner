@@ -13,3 +13,7 @@ cd build
 cmake ..
 
 cmake . --build
+
+# PreBuild
+
+[Release](/release/mazeRunner.exe)
