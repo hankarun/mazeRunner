@@ -16,4 +16,4 @@ cmake . --build
 
 # PreBuild
 
-[Release](/release/mazeRunner.exe)
+[Release](/release/win64/mazeRunner.exe)
