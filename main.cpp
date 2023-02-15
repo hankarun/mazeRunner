@@ -13,9 +13,17 @@
 int screenWidth = 800;
 int screenHeight = 800;
 
-float height = 50;
-float width = 50;
+int cellSize = 10;
 
+float getCellRowCount()
+{
+	return screenHeight / cellSize;
+}
+
+float getCellColumnCount()
+{
+	return screenWidth / cellSize;
+}
 
 struct Cell
 {
@@ -188,42 +196,38 @@ Color getGroupColor(int groupId)
 
 void draw(Board* board, bool showColor)
 {
-	float cellWidth = screenWidth / width;
-	float cellHeight = screenHeight / height;
 	for (const auto& cell : board->cells)
 	{
-		float x = cell.x * cellWidth;
-		float y = cell.y * cellHeight;
+		float x = cell.x * cellSize;
+		float y = cell.y * cellSize;
 
 		if (cell.visited)
 		{
 			Color c(WHITE);
 			if (showColor)
 				c = getGroupColor(cell.groupId);
-			DrawRectangle(x, y, cellWidth, cellHeight, c);
+			DrawRectangle(x, y, cellSize, cellSize, c);
 		}
 		if (cell.walls[0])
-			DrawLine(x, y, x + cellWidth, y, BLACK);
+			DrawLine(x, y, x + cellSize, y, BLACK);
 		if (cell.walls[1])
-			DrawLine(x, y, x, y + cellWidth, BLACK);
+			DrawLine(x, y, x, y + cellSize, BLACK);
 		if (cell.walls[2])
-			DrawLine(x + cellWidth, y, x + cellWidth, y + cellWidth, BLACK);
+			DrawLine(x + cellSize, y, x + cellSize, y + cellSize, BLACK);
 		if (cell.walls[3])
-			DrawLine(x, y + cellWidth, x + cellWidth, y + cellWidth, BLACK);
+			DrawLine(x, y + cellSize, x + cellSize, y + cellSize, BLACK);
 	}
 
 }
 
 void draw(BoardGenerator* generator)
 {
-	float cellWidth = screenWidth / width;
-	float cellHeight = screenHeight / height;
 	if (!generator->traverse.empty())
 	{
 		auto top = generator->traverse.top();
-		float x = top->x * cellWidth;
-		float y = top->y * cellHeight;
-		DrawRectangle(x, y, cellWidth, cellHeight, GREEN);
+		float x = top->x * cellSize;
+		float y = top->y * cellSize;
+		DrawRectangle(x, y, cellSize, cellSize, GREEN);
 	}
 }
 
@@ -237,16 +241,16 @@ void drawInfo(int speed, bool loop)
 	DrawText("+ - Speed up / - - Slow down", 40, 60, 10, WHITE);
 	DrawText("Size W - Increase  / Q - Decrease", 40, 80, 10, WHITE);
 	DrawText("H - Show/Hide L - Loop On/Off - C Color On/Off", 40, 100, 10, WHITE);
-	DrawText(TextFormat("Size: %.0f %.0f Speed: %d, Loop: %d", width, height, speed, loop), 40, 120, 10, WHITE);
+	DrawText(TextFormat("Size: %d Speed: %d, Loop: %d", cellSize, speed, loop), 40, 120, 10, WHITE);
 }
 
 int main(int argc, char* argv[])
 {
-	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
+	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_RESIZABLE);
 	InitWindow(screenWidth, screenHeight, "MazeRunner");
 	SetTargetFPS(60);
 
-	Board board(width, height);
+	Board board(getCellColumnCount(), getCellRowCount());
 	BoardGenerator boardGenerator;
 
 	boardGenerator.init(&board);
@@ -258,9 +262,20 @@ int main(int argc, char* argv[])
 
 	while (!WindowShouldClose())
 	{
+		int currentscreenWidth = GetScreenWidth();
+		int currentscreenHeight = GetScreenHeight();
+		
+		if (currentscreenWidth != screenWidth && currentscreenHeight != screenHeight)
+		{
+			screenWidth = currentscreenWidth;
+			screenHeight = currentscreenHeight;
+			board = Board(getCellColumnCount(), getCellRowCount());
+			boardGenerator.init(&board);
+		}
+
 		if (loop && boardGenerator.isFinished())
 		{
-			board = Board(width, height);
+			board = Board(getCellColumnCount(), getCellRowCount());
 			boardGenerator.init(&board);
 		}
 
@@ -275,7 +290,7 @@ int main(int argc, char* argv[])
 			{
 				if (boardGenerator.isFinished())
 				{
-					board = Board(width, height);
+					board = Board(getCellColumnCount(), getCellRowCount());
 					boardGenerator.init(&board);
 				}
 
@@ -294,26 +309,23 @@ int main(int argc, char* argv[])
 				speed -= 1;
 			if (key == KEY_R)
 			{
-				board = Board(width, height);
+				board = Board(getCellColumnCount(), getCellRowCount());
 				boardGenerator.init(&board);
 				speed = 1;
 			}
 
 			if (key == KEY_Q)
 			{
-				width += 10;
-				height += 10;
-				board = Board(width, height);
+				cellSize += 1;
+				board = Board(getCellColumnCount(), getCellRowCount());
 				boardGenerator.init(&board);
 			}
 
 			if (key == KEY_W)
 			{
-				width -= 10;
-				height -= 10;
-				width = std::max(10.0f, width);
-				height = std::max(10.0f, height);
-				board = Board(width, height);
+				cellSize -= 5;
+				cellSize = std::max(3, cellSize);
+				board = Board(getCellColumnCount(), getCellRowCount());
 				boardGenerator.init(&board);
 			}
 
