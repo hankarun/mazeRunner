@@ -3,6 +3,7 @@
 #include <array>
 #include <stack>
 #include <random>
+#include <unordered_map>
 
 #include "raylib.h"
 #include "raymath.h"
@@ -25,7 +26,7 @@ struct Cell
 	// 2   3
 	// . 4 .
 	std::array<bool, 4> walls = { true, true, true, true };
-
+	int groupId = 0;
 	// . 0 .
 	// 1   2
 	// . 3 .
@@ -123,6 +124,7 @@ struct BoardGenerator
 {
 	std::stack<Cell*> traverse;
 	Cell* currrent = nullptr;
+	int currentGroupId = 1;
 
 	bool isFinished() const
 	{
@@ -151,18 +153,40 @@ struct BoardGenerator
 		auto neighBours = board->getUnvisitedNeighBours(currrent);
 		if (!neighBours.empty())
 		{
+			currrent->groupId = currentGroupId;
 			traverse.push(currrent);
 			int count = neighBours.size();
 			int lucky = rand() % count;
 			auto nextCell = neighBours[lucky];
 			nextCell->visited = true;
+			nextCell->groupId = currentGroupId;
 			currrent->removeWalls(nextCell);
 			traverse.push(nextCell);
+		}
+		else
+		{
+			currentGroupId++;
 		}
 	}
 };
 
-void draw(Board* board)
+std::unordered_map<int, Color> groupColors;
+
+Color getGroupColor(int groupId)
+{
+	auto result = groupColors.find(groupId);
+	if (result == groupColors.end())
+	{
+		unsigned char r = rand() % 255;
+		unsigned char g = rand() % 255;
+		unsigned char b = rand() % 255;
+		groupColors[groupId] = Color{ r, g, b, 255 };
+		return groupColors[groupId];
+	}
+	return result->second;
+}
+
+void draw(Board* board, bool showColor)
 {
 	float cellWidth = screenWidth / width;
 	float cellHeight = screenHeight / height;
@@ -172,7 +196,12 @@ void draw(Board* board)
 		float y = cell.y * cellHeight;
 
 		if (cell.visited)
-			DrawRectangle(x, y, cellWidth, cellHeight, WHITE);
+		{
+			Color c(WHITE);
+			if (showColor)
+				c = getGroupColor(cell.groupId);
+			DrawRectangle(x, y, cellWidth, cellHeight, c);
+		}
 		if (cell.walls[0])
 			DrawLine(x, y, x + cellWidth, y, BLACK);
 		if (cell.walls[1])
@@ -200,14 +229,14 @@ void draw(BoardGenerator* generator)
 
 void drawInfo(int speed, bool loop)
 {
-	DrawRectangle(10, 10, 250, 123, Fade(SKYBLUE, 0.9f));
-	DrawRectangleLines(10, 10, 250, 123, BLUE);
+	DrawRectangle(10, 10, 290, 123, Fade(SKYBLUE, 0.9f));
+	DrawRectangleLines(10, 10, 290, 123, BLUE);
 
 	DrawText("Keyboard Control:", 20, 20, 10, WHITE);
 	DrawText("F - Finish / R - Reset", 40, 40, 10, WHITE);
 	DrawText("+ - Speed up / - - Slow down", 40, 60, 10, WHITE);
 	DrawText("Size W - Increase  / Q - Decrease", 40, 80, 10, WHITE);
-	DrawText("H - Show/Hide L - Loop On/Off", 40, 100, 10, WHITE);
+	DrawText("H - Show/Hide L - Loop On/Off - C Color On/Off", 40, 100, 10, WHITE);
 	DrawText(TextFormat("Size: %.0f %.0f Speed: %d, Loop: %d", width, height, speed, loop), 40, 120, 10, WHITE);
 }
 
@@ -225,6 +254,7 @@ int main(int argc, char* argv[])
 	int speed = 1;
 	bool loop = false;
 	bool showInfo = true;
+	bool showColor = false;
 
 	while (!WindowShouldClose())
 	{
@@ -254,6 +284,9 @@ int main(int argc, char* argv[])
 
 			if (key == KEY_L)
 				loop = !loop;
+
+			if (key == KEY_C)
+				showColor = !showColor;
 
 			if (key ==  KEY_KP_ADD)
 				speed += 1;
@@ -294,7 +327,7 @@ int main(int argc, char* argv[])
 
 		BeginDrawing();
 		ClearBackground(DARKGRAY);
-		draw(&board);
+		draw(&board, showColor);
 		draw(&boardGenerator);
 
 		if (showInfo)
