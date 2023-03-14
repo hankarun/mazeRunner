@@ -2,6 +2,7 @@
 #include <vector>
 #include <array>
 #include <stack>
+#include <queue>
 #include <random>
 #include <unordered_map>
 
@@ -25,40 +26,49 @@ float getCellColumnCount()
 	return screenWidth / cellSize;
 }
 
+struct Position
+{
+	float x;
+	float y;
+};
+
+bool operator==(const Position& lhs, const Position& rhs)
+{
+	return lhs.x == rhs.x && lhs.y == rhs.y;
+}
+
 struct Cell
 {
-	float x = 0;
-	float y = 0;
+	Position position = {};
 	bool visited = false;
 	// . 1 .
 	// 2   3
 	// . 4 .
 	std::array<bool, 4> walls = { true, true, true, true };
-	int groupId = 0;
 	// . 0 .
 	// 1   2
 	// . 3 .
 	void removeWalls(Cell* n)
 	{
-		if (x == n->x - 1)
+		if (position.x == n->position.x - 1)
 		{
 			walls[2] = false;
 			n->walls[1] = false;
 		}
 
-		if (n->x == x - 1)
+		if (n->position.x == position.x - 1)
 		{
 			walls[1] = false;
 			n->walls[2] = false;
 		}
 
-		if (y == n->y - 1)
+		if (position.y == n->position.y - 1)
 		{
 			walls[3] = false;
 			n->walls[0] = false;
 		}
 
-		if (n->y == y - 1)
+		if (n->position.y == position.y - 1)
 		{
 			walls[0] = false;
 			n->walls[3] = false;
@@ -76,11 +86,15 @@ struct Board
 			for (int i = 0; i < width; ++i)
 			{
 				Cell cell;
-				cell.x = i;
-				cell.y = j;
+				cell.position = { (float)i, (float)j };
 				cells.push_back(cell);
 			}
 		}
+	}
+
+	int toIndex(const Position& pos)
+	{
+		return pos.x + pos.y * width;
 	}
 
 	std::vector<Cell*> getUnvisitedNeighBours(Cell* p)
@@ -88,33 +102,33 @@ struct Board
 		std::vector<Cell*> neighbours;
 
 		// north (x, y -1)
-		if (p->y > 0)
+		if (p->position.y > 0)
 		{
-			int index = p->x + (p->y - 1) * width;
+			int index = p->position.x + (p->position.y - 1) * width;
 			if (!cells.at(index).visited)
 				neighbours.push_back(&cells[index]);
 		}
 
 		// south (x, y + 1)
-		if (p->y < (height - 1))
+		if (p->position.y < (height - 1))
 		{
-			int index = p->x + (p->y + 1) * width;
+			int index = p->position.x + (p->position.y + 1) * width;
 			if (!cells.at(index).visited)
 				neighbours.push_back(&cells[index]);
 		}
 
 		// east (x - 1, y)
-		if (p->x > 0)
+		if (p->position.x > 0)
 		{
-			int index = p->x - 1 + p->y * width;
+			int index = p->position.x - 1 + p->position.y * width;
 			if (!cells.at(index).visited)
 				neighbours.push_back(&cells[index]);
 		}
 
 		// west (x + 1, y)
-		if (p->x < (width - 1))
+		if (p->position.x < (width - 1))
 		{
-			int index = p->x + 1 + p->y * width;
+			int index = p->position.x + 1 + p->position.y * width;
 			if (!cells.at(index).visited)
 				neighbours.push_back(&cells[index]);
 		}
@@ -125,14 +139,45 @@ struct Board
 	std::vector<Cell> cells;
 	float width = 50;
 	float height = 50;
+
+	Position target = {};
+	Position home = {};
 };
 
+struct BoardColor
+{
+	std::vector<int> groupIds;
+	std::unordered_map<int, Color> groupColors;
+
+	void init(Board* board)
+	{
+		groupIds.resize(board->cells.size());
+		std::fill(groupIds.begin(), groupIds.end(), 0);
+	}
+
+	Color getGroupColor(int index)
+	{
+		auto result = groupColors.find(groupIds.at(index));
+		if (result == groupColors.end())
+		{
+			unsigned char r = rand() % 255;
+			unsigned char g = rand() % 255;
+			unsigned char b = rand() % 255;
+			groupColors[groupIds.at(index)] = Color{ r, g, b, 255 };
+			return groupColors[groupIds.at(index)];
+		}
+		return result->second;
+	}
+};
 
 struct BoardGenerator
 {
+	BoardGenerator(BoardColor* colorer)
+		: colorer(colorer) {}
 	std::stack<Cell*> traverse;
 	Cell* currrent = nullptr;
 	int currentGroupId = 1;
+	BoardColor* colorer;
 
 	bool isFinished() const
 	{
@@ -148,8 +193,15 @@ struct BoardGenerator
 	void init(Board* board)
 	{
 		traverse = std::stack<Cell*>();
-		board->cells[0].visited = true;
-		traverse.push(&board->cells[0]);
+		float startCellX = rand() % (int)board->width;
+		float startCellY = rand() % (int)board->height;
+		board->home = { startCellX, startCellY };
+		float startIndex = board->toIndex(board->home);		
+		board->cells[startIndex].visited = true;
+		traverse.push(&board->cells[startIndex]);
+
+		board->target = { float(rand() % (int)board->width), float(rand() % (int)board->height) };
+		colorer->init(board);
 	}
 
 	void update(Board* board)
@@ -158,16 +210,22 @@ struct BoardGenerator
 			return;
 		currrent = traverse.top();
 		traverse.pop();
+
 		auto neighBours = board->getUnvisitedNeighBours(currrent);
+		if (currrent->position == board->target)
+		{
+			neighBours.clear();
+		}
+
 		if (!neighBours.empty())
 		{
-			currrent->groupId = currentGroupId;
+			colorer->groupIds.at(board->toIndex(currrent->position)) = currentGroupId;
 			traverse.push(currrent);
 			int count = neighBours.size();
 			int lucky = rand() % count;
 			auto nextCell = neighBours[lucky];
 			nextCell->visited = true;
-			nextCell->groupId = currentGroupId;
+			colorer->groupIds.at(board->toIndex(nextCell->position)) = currentGroupId;
 			currrent->removeWalls(nextCell);
 			traverse.push(nextCell);
 		}
@@ -178,34 +236,50 @@ struct BoardGenerator
 	}
 };
 
-std::unordered_map<int, Color> groupColors;
-
-Color getGroupColor(int groupId)
+struct BoardSolver
 {
-	auto result = groupColors.find(groupId);
-	if (result == groupColors.end())
-	{
-		unsigned char r = rand() % 255;
-		unsigned char g = rand() % 255;
-		unsigned char b = rand() % 255;
-		groupColors[groupId] = Color{ r, g, b, 255 };
-		return groupColors[groupId];
+	BoardSolver(Board* board)
+		: board(board) {
+
 	}
-	return result->second;
+
+	void iterate(int count)
+	{
+
+	}
+
+	bool isSolved() const
+	{
+		return solved;
+	}
+
+	Board* board;
+	bool solved = false;
+	std::vector<Cell*> solution;
+};
+
+void draw(BoardSolver* solver)
+{
+	for (auto cell : solver->solution)
+	{
+		float x = cell->position.x * cellSize;
+		float y = cell->position.y * cellSize;
+		DrawRectangle(x, y, cellSize, cellSize, BLUE);
+	}
 }
 
-void draw(Board* board, bool showColor)
+void draw(Board* board, bool showColor, BoardColor* colorer)
 {
 	for (const auto& cell : board->cells)
 	{
-		float x = cell.x * cellSize;
-		float y = cell.y * cellSize;
+		float x = cell.position.x * cellSize;
+		float y = cell.position.y * cellSize;
 
 		if (cell.visited)
 		{
 			Color c(WHITE);
 			if (showColor)
-				c = getGroupColor(cell.groupId);
+				c = colorer->getGroupColor(board->toIndex(cell.position));
 			DrawRectangle(x, y, cellSize, cellSize, c);
 		}
 		if (cell.walls[0])
@@ -218,6 +292,23 @@ void draw(Board* board, bool showColor)
 			DrawLine(x, y + cellSize, x + cellSize, y + cellSize, BLACK);
 	}
 
+	Color targetColor{
+		255,
+		0,
+		0,
+		255
+	};
+	DrawRectangle(board->target.x * cellSize, board->target.y * cellSize, cellSize, cellSize, targetColor);
+
+	targetColor = Color{
+	0,
+	255,
+	0,
+	255
+	};
+	int homeIndex = board->home.x + board->home.y * board->width;
+	const auto& homeCell = board->cells.at(homeIndex);
+	DrawRectangle(homeCell.position.x * cellSize, homeCell.position.y * cellSize, cellSize, cellSize, targetColor);
 }
 
 void draw(BoardGenerator* generator)
@@ -225,8 +316,8 @@ void draw(BoardGenerator* generator)
 	if (!generator->traverse.empty())
 	{
 		auto top = generator->traverse.top();
-		float x = top->x * cellSize;
-		float y = top->y * cellSize;
+		float x = top->position.x * cellSize;
+		float y = top->position.y * cellSize;
 		DrawRectangle(x, y, cellSize, cellSize, GREEN);
 	}
 }
@@ -251,7 +342,8 @@ int main(int argc, char* argv[])
 	SetTargetFPS(60);
 
 	Board board(getCellColumnCount(), getCellRowCount());
-	BoardGenerator boardGenerator;
+	BoardColor colorer;
+	BoardGenerator boardGenerator(&colorer);
 
 	boardGenerator.init(&board);
 
@@ -264,7 +356,7 @@ int main(int argc, char* argv[])
 	{
 		int currentscreenWidth = GetScreenWidth();
 		int currentscreenHeight = GetScreenHeight();
-		
+
 		if (currentscreenWidth != screenWidth && currentscreenHeight != screenHeight)
 		{
 			screenWidth = currentscreenWidth;
@@ -303,9 +395,9 @@ int main(int argc, char* argv[])
 			if (key == KEY_C)
 				showColor = !showColor;
 
-			if (key ==  KEY_KP_ADD)
+			if (key == KEY_KP_ADD)
 				speed += 1;
-			if (key ==  KEY_KP_SUBTRACT)
+			if (key == KEY_KP_SUBTRACT)
 				speed -= 1;
 			if (key == KEY_R)
 			{
@@ -334,12 +426,12 @@ int main(int argc, char* argv[])
 
 		speed = std::max(1, speed);
 
-		for(int i = 0; i < speed; ++i)
+		for (int i = 0; i < speed; ++i)
 			boardGenerator.update(&board);
 
 		BeginDrawing();
 		ClearBackground(DARKGRAY);
-		draw(&board, showColor);
+		draw(&board, showColor, &colorer);
 		draw(&boardGenerator);
 
 		if (showInfo)
