@@ -19,7 +19,7 @@
 void UpdateDrawFrame(void* userData)
 {
 	auto game = (Game*)userData;
-
+	game->updateCanvasSize(GetScreenWidth(), GetScreenHeight());
 	game->update(0);
 
 	BeginDrawing();
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 800, "MazeRunner");
 
-	Game game;
+	Game game(800, 800);
 	game.init();
 
 #ifdef PLATFORM_WEB

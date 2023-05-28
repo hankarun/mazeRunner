@@ -1,9 +1,9 @@
 #include "game.h"
 
-Game::Game()
+Game::Game(int width, int height)
 	: cellSize(10)
-	, screenHeight(800)
-	, screenWidth(800)
+	, screenHeight(height)
+	, screenWidth(width)
 	, board(getCellColumnCount(), getCellRowCount())
 	, boardGenerator(&colorer)
 {
@@ -22,23 +22,18 @@ void Game::reset()
 	colorer.init(&board);
 }
 
-void Game::updateCanvasSize()
+void Game::updateCanvasSize(int width, int height)
 {
-	int currentscreenWidth = GetScreenWidth();
-	int currentscreenHeight = GetScreenHeight();
-
-	if (currentscreenWidth != screenWidth && currentscreenHeight != screenHeight)
+	if (width != screenWidth && height != screenHeight)
 	{
-		screenWidth = currentscreenWidth;
-		screenHeight = currentscreenHeight;
+		screenWidth = width;
+		screenHeight = height;
 		reset();
 	}
 }
 
 void Game::update(double time)
 {
-	updateCanvasSize();
-
 	if (loop && boardGenerator.isFinished())
 	{
 		reset();

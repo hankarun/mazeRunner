@@ -6,13 +6,13 @@
 class Game
 {
 public:
-	Game();
+	Game(int width, int height);
 
 	void init();
 
 	void reset();
 
-	void updateCanvasSize();
+	void updateCanvasSize(int width, int height);
 
 	void update(double time);
 
