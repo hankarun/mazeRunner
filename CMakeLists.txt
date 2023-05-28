@@ -19,7 +19,23 @@ endif ()
 
 
 add_executable(${PROJECT_NAME} 
-    raygui.h
-	main.cpp)
+    src/gamedrawer.h
+    src/gamedrawer.cpp
+    src/boardgenerator.h
+    src/boardgenerator.cpp
+    src/boardcolors.h
+    src/boardcolors.cpp
+    src/boardsolver.h
+    src/boardsolver.cpp
+    src/game.h
+    src/game.cpp
+    src/board.h
+    src/board.cpp
+    src/common.h
+    src/common.cpp
+    src/cell.h
+    src/cell.cpp
+    src/raygui.h
+	src/main.cpp)
 	
 target_link_libraries(${PROJECT_NAME} raylib)
