@@ -11,6 +11,7 @@ if (EMSCRIPTEN)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_GLFW=3 -s ASSERTIONS=1 -s WASM=1 -s ASYNCIFY")
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
     set_property(TARGET raylib PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/rlib/lib/libraylib.a)
+    add_compile_definitions(PLATFORM_WEB)
 else()
     set_property(TARGET raylib PROPERTY IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/rlib/lib/raylib.lib)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
@@ -18,6 +19,7 @@ endif ()
 
 
 add_executable(${PROJECT_NAME} 
+    raygui.h
 	main.cpp)
 	
 target_link_libraries(${PROJECT_NAME} raylib)

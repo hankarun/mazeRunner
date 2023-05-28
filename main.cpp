@@ -8,6 +8,8 @@
 
 #include "rlib/include/raylib.h"
 #include "rlib/include/raymath.h"
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"                 // Required for GUI controls
 
 #pragma comment(lib, "winmm.lib")
 
@@ -333,6 +335,8 @@ void drawInfo(int speed, bool loop)
 	DrawText("Size W - Increase  / Q - Decrease", 40, 80, 10, WHITE);
 	DrawText("H - Show/Hide L - Loop On/Off - C Color On/Off", 40, 100, 10, WHITE);
 	DrawText(TextFormat("Size: %d Speed: %d, Loop: %d", cellSize, speed, loop), 40, 120, 10, WHITE);
+	static bool drawRing = false;
+	drawRing = GuiCheckBox(Rectangle{ 600, 320, 20, 20 }, "Draw Ring", &drawRing);
 }
 
 class Game
@@ -349,7 +353,13 @@ public:
 		boardGenerator.init(&board);
 	}
 
-	void update(double time)
+	void resetBoard()
+	{
+		board = Board(getCellColumnCount(), getCellRowCount());
+		boardGenerator.init(&board);
+	}
+
+	void updateCanvasSize()
 	{
 		int currentscreenWidth = GetScreenWidth();
 		int currentscreenHeight = GetScreenHeight();
@@ -358,14 +368,17 @@ public:
 		{
 			screenWidth = currentscreenWidth;
 			screenHeight = currentscreenHeight;
-			board = Board(getCellColumnCount(), getCellRowCount());
-			boardGenerator.init(&board);
+			resetBoard();
 		}
+	}
+
+	void update(double time)
+	{
+		updateCanvasSize();
 
 		if (loop && boardGenerator.isFinished())
 		{
-			board = Board(getCellColumnCount(), getCellRowCount());
-			boardGenerator.init(&board);
+			resetBoard();
 		}
 
 		int key = GetKeyPressed();
@@ -379,8 +392,7 @@ public:
 			{
 				if (boardGenerator.isFinished())
 				{
-					board = Board(getCellColumnCount(), getCellRowCount());
-					boardGenerator.init(&board);
+					resetBoard();
 				}
 
 				boardGenerator.finish(&board);
@@ -398,24 +410,21 @@ public:
 				speed -= 1;
 			if (key == KEY_R)
 			{
-				board = Board(getCellColumnCount(), getCellRowCount());
-				boardGenerator.init(&board);
+				resetBoard();
 				speed = 1;
 			}
 
 			if (key == KEY_Q)
 			{
 				cellSize += 1;
-				board = Board(getCellColumnCount(), getCellRowCount());
-				boardGenerator.init(&board);
+				resetBoard();
 			}
 
 			if (key == KEY_W)
 			{
 				cellSize -= 5;
 				cellSize = std::max(3, cellSize);
-				board = Board(getCellColumnCount(), getCellRowCount());
-				boardGenerator.init(&board);
+				resetBoard();
 			}
 
 			key = GetKeyPressed();
@@ -449,10 +458,10 @@ private:
 	bool showColor = false;
 };
 
-void UpdateDrawFrame(double time, void* userData)
+void UpdateDrawFrame(void* userData)
 {
 	auto game = (Game*)userData;
-	game->update(time);
+	game->update(0);
 }
 
 #ifdef PLATFORM_WEB
@@ -473,7 +482,7 @@ int main(int argc, char* argv[])
 	SetTargetFPS(60);
 	while (!WindowShouldClose())
 	{
-		UpdateDrawFrame(0, &game);
+		UpdateDrawFrame(&game);
 	}
 #endif
 
