@@ -6,8 +6,8 @@
 #include <random>
 #include <unordered_map>
 
-#include "raylib.h"
-#include "raymath.h"
+#include "rlib/include/raylib.h"
+#include "rlib/include/raymath.h"
 
 #pragma comment(lib, "winmm.lib")
 
@@ -196,7 +196,7 @@ struct BoardGenerator
 		float startCellX = rand() % (int)board->width;
 		float startCellY = rand() % (int)board->height;
 		board->home = { startCellX, startCellY };
-		float startIndex = board->toIndex(board->home);		
+		float startIndex = board->toIndex(board->home);
 		board->cells[startIndex].visited = true;
 		traverse.push(&board->cells[startIndex]);
 
@@ -335,24 +335,21 @@ void drawInfo(int speed, bool loop)
 	DrawText(TextFormat("Size: %d Speed: %d, Loop: %d", cellSize, speed, loop), 40, 120, 10, WHITE);
 }
 
-int main(int argc, char* argv[])
+class Game
 {
-	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_RESIZABLE);
-	InitWindow(screenWidth, screenHeight, "MazeRunner");
-	SetTargetFPS(60);
+public:
+	Game()
+		: board(getCellColumnCount(), getCellRowCount())
+		, boardGenerator(&colorer)
+	{
+	}
 
-	Board board(getCellColumnCount(), getCellRowCount());
-	BoardColor colorer;
-	BoardGenerator boardGenerator(&colorer);
+	void init()
+	{
+		boardGenerator.init(&board);
+	}
 
-	boardGenerator.init(&board);
-
-	int speed = 1;
-	bool loop = false;
-	bool showInfo = true;
-	bool showColor = false;
-
-	while (!WindowShouldClose())
+	void update(double time)
 	{
 		int currentscreenWidth = GetScreenWidth();
 		int currentscreenHeight = GetScreenHeight();
@@ -440,6 +437,45 @@ int main(int argc, char* argv[])
 
 		EndDrawing();
 	}
+
+private:
+	Board board;
+	BoardColor colorer;
+	BoardGenerator boardGenerator;
+
+	int speed = 1;
+	bool loop = false;
+	bool showInfo = true;
+	bool showColor = false;
+};
+
+void UpdateDrawFrame(double time, void* userData)
+{
+	auto game = (Game*)userData;
+	game->update(time);
+}
+
+#ifdef PLATFORM_WEB
+#include <emscripten/emscripten.h>
+#endif
+
+int main(int argc, char* argv[])
+{
+	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_RESIZABLE);
+	InitWindow(screenWidth, screenHeight, "MazeRunner");
+
+	Game game;
+	game.init();
+
+#ifdef PLATFORM_WEB
+	emscripten_set_main_loop_arg(UpdateDrawFrame, &game, 0, 1);
+#else
+	SetTargetFPS(60);
+	while (!WindowShouldClose())
+	{
+		UpdateDrawFrame(0, &game);
+	}
+#endif
 
 	CloseWindow();
 
