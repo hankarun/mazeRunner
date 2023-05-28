@@ -3,9 +3,7 @@
 #include "boardcolors.h"
 #include "boardgenerator.h"
 
-int getCellRowCount();
 
-int getCellColumnCount();
 
 class Game
 {
@@ -20,6 +18,9 @@ public:
 
 	void update(double time);
 
+	int getCellRowCount();
+
+	int getCellColumnCount();
 public:
 	Board board;
 	BoardColor colorer;
@@ -28,4 +29,7 @@ public:
 	int speed = 1;
 	bool loop = false;
 	bool showColor = false;
+	int screenWidth = 800;
+	int screenHeight = 800;
+	int cellSize = 10;
 };

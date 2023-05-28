@@ -1,11 +1,11 @@
 #include "game.h"
 
-int getCellRowCount()
+int Game::getCellRowCount()
 {
 	return screenHeight / cellSize;
 }
 
-int getCellColumnCount()
+int Game::getCellColumnCount()
 {
 	return screenWidth / cellSize;
 }

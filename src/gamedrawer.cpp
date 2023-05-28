@@ -3,18 +3,24 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"                 // Required for GUI controls
 
+GameDrawer::GameDrawer(Game* game)
+	: game(game)
+{
+}
+
 void GameDrawer::draw(BoardSolver* solver)
 {
 	for (auto cell : solver->getSolution())
 	{
-		float x = cell->position.x * cellSize;
-		float y = cell->position.y * cellSize;
-		DrawRectangle(x, y, cellSize, cellSize, BLUE);
+		float x = cell->position.x * game->cellSize;
+		float y = cell->position.y * game->cellSize;
+		DrawRectangle(x, y, game->cellSize, game->cellSize, BLUE);
 	}
 }
 
 void GameDrawer::draw(Board* board, bool showColor, BoardColor* colorer)
 {
+	int cellSize = game->cellSize;
 	for (const auto& cell : board->cells)
 	{
 		float x = cell.position.x * cellSize;
@@ -58,6 +64,8 @@ void GameDrawer::draw(Board* board, bool showColor, BoardColor* colorer)
 
 void GameDrawer::draw(BoardGenerator* generator)
 {
+	int cellSize = game->cellSize;
+
 	if (!generator->traverse.empty())
 	{
 		auto top = generator->traverse.top();
@@ -77,7 +85,7 @@ void GameDrawer::drawInfo(Game* game)
 	static bool ValueBOx004EditMode = false;
 	static bool ValueBOx005EditMode = false;
 	if (GuiSpinner(Rectangle { 104, 120, 120, 24 }, "Speed", & game->speed, 0, 100, ValueBOx004EditMode)) ValueBOx004EditMode = !ValueBOx004EditMode;
-	if (GuiSpinner(Rectangle { 104, 184, 120, 24 }, "Cell Size", & cellSize, 0, 100, ValueBOx005EditMode)) ValueBOx005EditMode = !ValueBOx005EditMode;
+	if (GuiSpinner(Rectangle { 104, 184, 120, 24 }, "Cell Size", &game->cellSize, 0, 100, ValueBOx005EditMode)) ValueBOx005EditMode = !ValueBOx005EditMode;
 
 	if (GuiButton(Rectangle{ 112, 152, 112, 24 }, "Finish Generating"))
 	{

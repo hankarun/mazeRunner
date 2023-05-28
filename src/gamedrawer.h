@@ -9,6 +9,8 @@
 class GameDrawer
 {
 public:
+	GameDrawer(Game* game);
+
 	void draw(BoardSolver* solver);
 
 	void draw(Board* board, bool showColor, BoardColor* colorer);
@@ -16,4 +18,7 @@ public:
 	void draw(BoardGenerator* generator);
 
 	void drawInfo(Game* game);
+
+private:
+	Game* game;
 };

@@ -52,14 +52,14 @@ void updateKeys(Game* game)
 		game->speed = std::max(1, game->speed);
 		if (key == KEY_Q)
 		{
-			cellSize += 1;
+			game->cellSize += 1;
 			game->resetBoard();
 		}
 
 		if (key == KEY_W)
 		{
-			cellSize -= 5;
-			cellSize = std::max(3, cellSize);
+			game->cellSize -= 5;
+			game->cellSize = std::max(3, game->cellSize);
 			game->resetBoard();
 		}
 
@@ -76,7 +76,7 @@ void UpdateDrawFrame(void* userData)
 
 	BeginDrawing();
 	ClearBackground(DARKGRAY);
-	GameDrawer drawer;
+	GameDrawer drawer(game);
 	drawer.draw(&game->board, game->showColor, &game->colorer);
 	drawer.draw(&game->boardGenerator);
 
@@ -92,7 +92,7 @@ void UpdateDrawFrame(void* userData)
 int main(int argc, char* argv[])
 {
 	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_RESIZABLE);
-	InitWindow(screenWidth, screenHeight, "MazeRunner");
+	InitWindow(800, 800, "MazeRunner");
 
 	Game game;
 	game.init();
