@@ -15,7 +15,7 @@ void Game::init()
 	boardGenerator.init(&board);
 }
 
-void Game::resetBoard()
+void Game::reset()
 {
 	board = Board(getCellColumnCount(), getCellRowCount());
 	boardGenerator.init(&board);
@@ -31,7 +31,7 @@ void Game::updateCanvasSize()
 	{
 		screenWidth = currentscreenWidth;
 		screenHeight = currentscreenHeight;
-		resetBoard();
+		reset();
 	}
 }
 
@@ -41,7 +41,7 @@ void Game::update(double time)
 
 	if (loop && boardGenerator.isFinished())
 	{
-		resetBoard();
+		reset();
 	}
 
 	for (int i = 0; i < speed; ++i)

@@ -91,14 +91,14 @@ void GameDrawer::drawInfo(Game* game)
 	{
 		if (game->boardGenerator.isFinished())
 		{
-			game->resetBoard();
+			game->reset();
 		}
 
 		game->boardGenerator.finish(&game->board);
 	}
 	if (GuiButton(Rectangle{ 24, 152, 80, 24 }, "Reset"))
 	{
-		game->resetBoard();
+		game->reset();
 		game->speed = 1;
 	}
 }

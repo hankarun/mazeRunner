@@ -10,7 +10,7 @@ public:
 
 	void init();
 
-	void resetBoard();
+	void reset();
 
 	void updateCanvasSize();
 
