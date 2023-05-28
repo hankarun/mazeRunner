@@ -3,8 +3,6 @@
 #include "boardcolors.h"
 #include "boardgenerator.h"
 
-
-
 class Game
 {
 public:
@@ -22,14 +20,14 @@ public:
 
 	int getCellColumnCount();
 public:
-	Board board;
-	BoardColor colorer;
-	BoardGenerator boardGenerator;
-
 	int speed = 1;
 	bool loop = false;
 	bool showColor = false;
 	int screenWidth = 800;
 	int screenHeight = 800;
 	int cellSize = 10;
+
+	Board board;
+	BoardColor colorer;
+	BoardGenerator boardGenerator;
 };

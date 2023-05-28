@@ -16,62 +16,10 @@
 
 #pragma comment(lib, "winmm.lib")
 
-bool showInfo = true;
-
-void updateKeys(Game* game)
-{
-	int key = GetKeyPressed();
-
-	while (key > 0)
-	{
-		if (key == KEY_H)
-			showInfo = !showInfo;
-
-		if (key == KEY_F)
-		{
-			if (game->boardGenerator.isFinished())
-			{
-				game->resetBoard();
-			}
-
-			game->boardGenerator.finish(&game->board);
-		}
-
-		if (key == KEY_L)
-			game->loop = !game->loop;
-
-		if (key == KEY_KP_ADD)
-			game->speed += 1;
-		if (key == KEY_KP_SUBTRACT)
-			game->speed -= 1;
-		if (key == KEY_R)
-		{
-			game->resetBoard();
-			game->speed = 1;
-		}
-		game->speed = std::max(1, game->speed);
-		if (key == KEY_Q)
-		{
-			game->cellSize += 1;
-			game->resetBoard();
-		}
-
-		if (key == KEY_W)
-		{
-			game->cellSize -= 5;
-			game->cellSize = std::max(3, game->cellSize);
-			game->resetBoard();
-		}
-
-		key = GetKeyPressed();
-	}
-}
-
 void UpdateDrawFrame(void* userData)
 {
 	auto game = (Game*)userData;
 
-	updateKeys(game);
 	game->update(0);
 
 	BeginDrawing();
@@ -79,9 +27,8 @@ void UpdateDrawFrame(void* userData)
 	GameDrawer drawer(game);
 	drawer.draw(&game->board, game->showColor, &game->colorer);
 	drawer.draw(&game->boardGenerator);
+	drawer.drawInfo(game);
 
-	if (showInfo)
-		drawer.drawInfo(game);
 	EndDrawing();
 }
 

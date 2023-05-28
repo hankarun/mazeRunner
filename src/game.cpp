@@ -1,17 +1,10 @@
 #include "game.h"
 
-int Game::getCellRowCount()
-{
-	return screenHeight / cellSize;
-}
-
-int Game::getCellColumnCount()
-{
-	return screenWidth / cellSize;
-}
-
 Game::Game()
-	: board(getCellColumnCount(), getCellRowCount())
+	: cellSize(10)
+	, screenHeight(800)
+	, screenWidth(800)
+	, board(getCellColumnCount(), getCellRowCount())
 	, boardGenerator(&colorer)
 {
 	colorer.init(&board);
@@ -53,4 +46,14 @@ void Game::update(double time)
 
 	for (int i = 0; i < speed; ++i)
 		boardGenerator.update(&board);
+}
+
+int Game::getCellRowCount()
+{
+	return screenHeight / cellSize;
+}
+
+int Game::getCellColumnCount()
+{
+	return screenWidth / cellSize;
 }
