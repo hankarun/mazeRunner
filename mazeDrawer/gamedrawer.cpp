@@ -1,7 +1,6 @@
 #include "gamedrawer.h"
 
-#define RAYGUI_IMPLEMENTATION
-#include "raygui.h"                 // Required for GUI controls
+#include "raylib.h"
 
 GameDrawer::GameDrawer(maze::Game* game)
 	: game(game)
@@ -75,33 +74,5 @@ void GameDrawer::draw(maze::BoardGenerator* generator)
 		float x = top->position.x * cellSize;
 		float y = top->position.y * cellSize;
 		DrawRectangle(x, y, cellSize, cellSize, GREEN);
-	}
-}
-
-void GameDrawer::drawInfo(maze::Game* game)
-{
-	DrawRectangle(20, 50, 250, 180, Fade(SKYBLUE, 0.9f));
-	DrawRectangleLines(20, 50, 250, 180, BLUE);
-
-	GuiCheckBox(Rectangle { 24, 56, 24, 24 }, "Show Color", &game->showColor);
-	GuiCheckBox(Rectangle { 24, 88, 24, 24 }, "Loop", &game->loop);
-	static bool ValueBOx004EditMode = false;
-	static bool ValueBOx005EditMode = false;
-	if (GuiSpinner(Rectangle { 104, 120, 120, 24 }, "Speed", & game->speed, 0, 100, ValueBOx004EditMode)) ValueBOx004EditMode = !ValueBOx004EditMode;
-	if (GuiSpinner(Rectangle { 104, 184, 120, 24 }, "Cell Size", &game->cellSize, 0, 100, ValueBOx005EditMode)) ValueBOx005EditMode = !ValueBOx005EditMode;
-
-	if (GuiButton(Rectangle{ 112, 152, 112, 24 }, "Finish Generating"))
-	{
-		if (game->boardGenerator.isFinished())
-		{
-			game->reset();
-		}
-
-		game->boardGenerator.finish(&game->board);
-	}
-	if (GuiButton(Rectangle{ 24, 152, 80, 24 }, "Reset"))
-	{
-		game->reset();
-		game->speed = 1;
 	}
 }

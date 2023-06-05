@@ -16,9 +16,6 @@ public:
 	void draw(maze::Board* board, bool showColor, maze::BoardColor* colorer);
 
 	void draw(maze::BoardGenerator* generator);
-
-	void drawInfo(maze::Game* game);
-
 private:
 	maze::Game* game;
 };

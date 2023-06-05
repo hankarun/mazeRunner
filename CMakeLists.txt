@@ -19,4 +19,7 @@ endif ()
 
 add_subdirectory(imgui)
 add_subdirectory(libMaze)
+add_subdirectory(rimgui)
+add_subdirectory(mazeDrawer)
+add_subdirectory(imguiapp)
 add_subdirectory(mazeBuilder)
