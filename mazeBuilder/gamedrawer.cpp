@@ -3,12 +3,12 @@
 #define RAYGUI_IMPLEMENTATION
 #include "raygui.h"                 // Required for GUI controls
 
-GameDrawer::GameDrawer(Game* game)
+GameDrawer::GameDrawer(maze::Game* game)
 	: game(game)
 {
 }
 
-void GameDrawer::draw(BoardSolver* solver)
+void GameDrawer::draw(maze::BoardSolver* solver)
 {
 	for (auto cell : solver->getSolution())
 	{
@@ -18,7 +18,7 @@ void GameDrawer::draw(BoardSolver* solver)
 	}
 }
 
-void GameDrawer::draw(Board* board, bool showColor, BoardColor* colorer)
+void GameDrawer::draw(maze::Board* board, bool showColor, maze::BoardColor* colorer)
 {
 	int cellSize = game->cellSize;
 	for (const auto& cell : board->cells)
@@ -30,7 +30,10 @@ void GameDrawer::draw(Board* board, bool showColor, BoardColor* colorer)
 		{
 			Color c(WHITE);
 			if (showColor)
-				c = colorer->getGroupColor(board->toIndex(cell.position));
+			{
+				auto cellColor = colorer->getGroupColor(board->toIndex(cell.position));
+				c = {cellColor.r, cellColor.g, cellColor.b, cellColor.a};
+			}
 			DrawRectangle(x, y, cellSize, cellSize, c);
 		}
 		if (cell.walls[0])
@@ -62,7 +65,7 @@ void GameDrawer::draw(Board* board, bool showColor, BoardColor* colorer)
 	DrawRectangle(homeCell.position.x * cellSize, homeCell.position.y * cellSize, cellSize, cellSize, targetColor);
 }
 
-void GameDrawer::draw(BoardGenerator* generator)
+void GameDrawer::draw(maze::BoardGenerator* generator)
 {
 	int cellSize = game->cellSize;
 
@@ -75,7 +78,7 @@ void GameDrawer::draw(BoardGenerator* generator)
 	}
 }
 
-void GameDrawer::drawInfo(Game* game)
+void GameDrawer::drawInfo(maze::Game* game)
 {
 	DrawRectangle(20, 50, 250, 180, Fade(SKYBLUE, 0.9f));
 	DrawRectangleLines(20, 50, 250, 180, BLUE);

@@ -6,19 +6,18 @@
 #include <random>
 #include <unordered_map>
 
-#include "cell.h"
-#include "board.h"
-#include "boardsolver.h"
-#include "boardcolors.h"
-#include "boardgenerator.h"
-#include "game.h"
+#include <game.h>
+
 #include "gamedrawer.h"
+
+#include "raylib.h"
+#include "raymath.h"
 
 #pragma comment(lib, "winmm.lib")
 
 void UpdateDrawFrame(void* userData)
 {
-	auto game = (Game*)userData;
+	auto game = (maze::Game*)userData;
 	game->updateCanvasSize(GetScreenWidth(), GetScreenHeight());
 	game->update(0);
 
@@ -41,7 +40,7 @@ int main(int argc, char* argv[])
 	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_RESIZABLE);
 	InitWindow(800, 800, "MazeRunner");
 
-	Game game(800, 800);
+	maze::Game game(800, 800);
 	game.init();
 
 #ifdef PLATFORM_WEB
