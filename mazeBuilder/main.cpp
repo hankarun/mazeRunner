@@ -63,6 +63,8 @@ void UpdateDrawFrame(void* userData)
 
 #ifdef PLATFORM_WEB
 #include <emscripten/emscripten.h>
+#else
+#pragma comment(lib, "winmm.lib")
 #endif
 
 int main(int argc, char* argv[])

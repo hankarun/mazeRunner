@@ -1,15 +1,3 @@
-/*******************************************************************************************
-*
-*   raylib-extras [ImGui] example - editor
-*
-*	This is a more complex ImGui Integration
-*	It shows how to build windows on top of 2d and 3d views using a render texture
-*
-*   Copyright (c) 2021 Jeffery Myers
-*
-********************************************************************************************/
-
-
 #include "raylib.h"
 #include "raymath.h"
 
@@ -37,8 +25,6 @@ public:
     virtual void Update() = 0;
 
     bool Focused = false;
-
-    Rectangle ContentRect = { 0 };
 };
 
 class MazeViewerWindow : public DocumentWindow
@@ -104,9 +90,7 @@ public:
     maze::Game game;
 };
 
-MazeViewerWindow MazeView;
-
-void DoMainMenu()
+void DoMainMenu(MazeViewerWindow& mazeView)
 {
     if (ImGui::BeginMainMenuBar())
     {
@@ -121,7 +105,7 @@ void DoMainMenu()
         if (ImGui::BeginMenu("Window"))
         {
             ImGui::MenuItem("ImGui Demo", nullptr, &ImGuiDemoOpen);
-            ImGui::MenuItem("Maze View", nullptr, &MazeView.Open);
+            ImGui::MenuItem("Maze View", nullptr, &mazeView.Open);
 
             ImGui::EndMenu();
         }
@@ -151,6 +135,37 @@ void drawInfo(maze::Game& game)
     }
 }
 
+void UpdateDrawFrame(void* userData)
+{
+    auto mazeView = (MazeViewerWindow*)userData;
+    mazeView->Update();
+
+    BeginDrawing();
+    ClearBackground(DARKGRAY);
+
+    rlImGuiBegin();
+    DoMainMenu(*mazeView);
+
+    if (ImGuiDemoOpen)
+        ImGui::ShowDemoWindow(&ImGuiDemoOpen);
+
+    if (mazeView->Open)
+    {
+        drawInfo(mazeView->game);
+        mazeView->Show();
+    }
+
+    rlImGuiEnd();
+
+    EndDrawing();
+}
+
+#ifdef PLATFORM_WEB
+#include <emscripten/emscripten.h>
+#else
+#pragma comment(lib, "winmm.lib")
+#endif
+
 int main(int argc, char* argv[])
 {
     // Initialization
@@ -164,27 +179,31 @@ int main(int argc, char* argv[])
     rlImGuiSetup(true);
     ImGui::GetIO().ConfigWindowsMoveFromTitleBarOnly = true;
 
-    MazeView.Setup();
-    MazeView.Open = true;
+    MazeViewerWindow mazeView;
+    mazeView.Setup();
+    mazeView.Open = true;
 
+#ifdef PLATFORM_WEB
+    emscripten_set_main_loop_arg(UpdateDrawFrame, &mazeView, 0, 1);
+#else
     // Main game loop
     while (!WindowShouldClose() && !Quit)    // Detect window close button or ESC key
     {
-        MazeView.Update();
+        mazeView.Update();
 
         BeginDrawing();
         ClearBackground(DARKGRAY);
 
         rlImGuiBegin();
-        DoMainMenu();
+        DoMainMenu(mazeView);
 
         if (ImGuiDemoOpen)
             ImGui::ShowDemoWindow(&ImGuiDemoOpen);
 
-        if (MazeView.Open)
+        if (mazeView.Open)
         {
-            drawInfo(MazeView.game);
-            MazeView.Show();
+            drawInfo(mazeView.game);
+            mazeView.Show();
         }
 
         rlImGuiEnd();
@@ -192,6 +211,9 @@ int main(int argc, char* argv[])
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
+#endif
+
+
     rlImGuiShutdown();
 
     // De-Initialization

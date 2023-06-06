@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 set(CMAKE_CXX_STANDARD 17)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 add_library(raylib STATIC IMPORTED GLOBAL)
 target_include_directories(raylib INTERFACE ${CMAKE_SOURCE_DIR}/rlib/include)
