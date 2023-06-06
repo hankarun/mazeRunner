@@ -18,12 +18,9 @@ namespace maze {
 		void init(Board* board);
 
 		void update(Board* board);
-
-		BoardColor* getColorer();
 	public:
 		std::stack<Cell*> traverse;
 		Cell* currrent = nullptr;
 		int currentGroupId = 1;
-		BoardColor colorer;
 	};
 }

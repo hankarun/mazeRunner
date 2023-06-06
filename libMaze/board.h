@@ -1,6 +1,7 @@
 #pragma once
 #include "common.h"
 #include "cell.h"
+#include "boardcolors.h"
 
 #include <vector>
 
@@ -15,11 +16,15 @@ namespace maze
 
 		std::vector<Cell*> getUnvisitedNeighBours(Cell* p);
 
+		void setColorer(BoardColor colorer);
+
+		BoardColor* getColorer();
 	public:
 		std::vector<Cell> cells;
 		float width = 50;
 		float height = 50;
 		Position target = {};
 		Position home = {};
+		BoardColor boardColorer;
 	};
 }

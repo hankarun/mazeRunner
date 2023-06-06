@@ -13,7 +13,7 @@ public:
 
 	void draw(maze::BoardSolver* solver);
 
-	void draw(maze::Board* board, bool showColor, maze::BoardColor* colorer);
+	void draw(maze::Board* board, bool showColor);
 
 	void draw(maze::BoardGenerator* generator);
 private:

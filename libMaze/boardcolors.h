@@ -1,11 +1,11 @@
 #pragma once
 #include "common.h"
 
-#include "board.h"
-
 #include <unordered_map>
 
 namespace maze {
+	class Board;
+
 	class BoardColor
 	{
 	public:

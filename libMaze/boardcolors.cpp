@@ -1,5 +1,7 @@
 #include "boardcolors.h"
 
+#include "board.h"
+
 namespace maze {
 	void BoardColor::init(Board* board)
 	{

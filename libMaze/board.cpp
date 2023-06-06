@@ -14,6 +14,7 @@ namespace maze
 				cells.push_back(cell);
 			}
 		}
+		boardColorer.init(this);
 	}
 
 	int Board::toIndex(const Position& pos)
@@ -58,5 +59,15 @@ namespace maze
 		}
 
 		return neighbours;
+	}
+
+	void Board::setColorer(BoardColor colorer)
+	{
+		boardColorer = colorer;
+		colorer.init(this);
+	}
+	BoardColor* Board::getColorer()
+	{
+		return &boardColorer;
 	}
 }

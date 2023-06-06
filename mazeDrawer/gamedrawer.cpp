@@ -17,8 +17,9 @@ void GameDrawer::draw(maze::BoardSolver* solver)
 	}
 }
 
-void GameDrawer::draw(maze::Board* board, bool showColor, maze::BoardColor* colorer)
+void GameDrawer::draw(maze::Board* board, bool showColor)
 {
+	auto colorer = board->getColorer();
 	int cellSize = game->cellSize;
 	for (const auto& cell : board->cells)
 	{

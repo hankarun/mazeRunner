@@ -1,6 +1,5 @@
 #pragma once
 #include "board.h"
-#include "boardcolors.h"
 #include "boardgenerator.h"
 
 namespace maze {

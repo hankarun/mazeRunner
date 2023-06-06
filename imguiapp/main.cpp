@@ -82,7 +82,7 @@ public:
 		BeginTextureMode(ViewTexture);
 		ClearBackground(SKYBLUE);
 		GameDrawer drawer(&game);
-		drawer.draw(&game.board, game.showColor, game.boardGenerator.getColorer());
+		drawer.draw(&game.board, game.showColor);
 		drawer.draw(&game.boardGenerator);
 		EndTextureMode();
 	}
