@@ -29,7 +29,6 @@ namespace maze {
 		int cellSize = 10;
 
 		Board board;
-		BoardColor colorer;
 		BoardGenerator boardGenerator;
 	};
 }

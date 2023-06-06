@@ -9,7 +9,7 @@ namespace maze {
 	class BoardGenerator
 	{
 	public:
-		BoardGenerator(BoardColor* colorer);
+		BoardGenerator();
 
 		bool isFinished() const;
 
@@ -19,10 +19,11 @@ namespace maze {
 
 		void update(Board* board);
 
+		BoardColor* getColorer();
 	public:
 		std::stack<Cell*> traverse;
 		Cell* currrent = nullptr;
 		int currentGroupId = 1;
-		BoardColor* colorer;
+		BoardColor colorer;
 	};
 }

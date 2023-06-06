@@ -1,8 +1,7 @@
 #include "boardgenerator.h"
 
 namespace maze {
-	BoardGenerator::BoardGenerator(BoardColor* colorer)
-		: colorer(colorer) {}
+	BoardGenerator::BoardGenerator() = default;
 
 	bool BoardGenerator::isFinished() const
 	{
@@ -26,7 +25,7 @@ namespace maze {
 		traverse.push(&board->cells[startIndex]);
 
 		board->target = { float(rand() % (int)board->width), float(rand() % (int)board->height) };
-		colorer->init(board);
+		colorer.init(board);
 	}
 
 	void BoardGenerator::update(Board* board)
@@ -44,13 +43,13 @@ namespace maze {
 
 		if (!neighBours.empty())
 		{
-			colorer->groupIds.at(board->toIndex(currrent->position)) = currentGroupId;
+			colorer.groupIds.at(board->toIndex(currrent->position)) = currentGroupId;
 			traverse.push(currrent);
 			int count = neighBours.size();
 			int lucky = rand() % count;
 			auto nextCell = neighBours[lucky];
 			nextCell->visited = true;
-			colorer->groupIds.at(board->toIndex(nextCell->position)) = currentGroupId;
+			colorer.groupIds.at(board->toIndex(nextCell->position)) = currentGroupId;
 			currrent->removeWalls(nextCell);
 			traverse.push(nextCell);
 		}
@@ -58,5 +57,10 @@ namespace maze {
 		{
 			currentGroupId++;
 		}
+	}
+
+	BoardColor* BoardGenerator::getColorer()
+	{
+		return &colorer;
 	}
 }

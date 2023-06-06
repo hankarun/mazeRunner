@@ -6,9 +6,7 @@ namespace maze {
 		, screenHeight(height)
 		, screenWidth(width)
 		, board(getCellColumnCount(), getCellRowCount())
-		, boardGenerator(&colorer)
 	{
-		colorer.init(&board);
 	}
 
 	void Game::init()
@@ -20,7 +18,6 @@ namespace maze {
 	{
 		board = Board(getCellColumnCount(), getCellRowCount());
 		boardGenerator.init(&board);
-		colorer.init(&board);
 	}
 
 	void Game::updateCanvasSize(int width, int height)
