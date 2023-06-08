@@ -198,7 +198,7 @@ int main(int argc, char* argv[])
 	int screenWidth = 1900;
 	int screenHeight = 900;
 
-	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT);
+	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT |  FLAG_WINDOW_RESIZABLE);
 	InitWindow(screenWidth, screenHeight, "raylib-Extras [ImGui] example - ImGui Demo");
 	SetTargetFPS(144);
 	rlImGuiSetup(true);
