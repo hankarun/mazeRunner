@@ -5,35 +5,15 @@
 #include "rlImGui.h"
 #include "rlImGuiColors.h"
 #include "rlgl.h"
+#include "rcamera.h"
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 bool Quit = false;
 
 bool ImGuiDemoOpen = false;
-
-void DoMainMenu()
-{
-	if (ImGui::BeginMainMenuBar())
-	{
-		if (ImGui::BeginMenu("File"))
-		{
-			if (ImGui::MenuItem("Exit"))
-				Quit = true;
-
-			ImGui::EndMenu();
-		}
-
-		if (ImGui::BeginMenu("Window"))
-		{
-			ImGui::MenuItem("ImGui Demo", nullptr, &ImGuiDemoOpen);
-
-			ImGui::EndMenu();
-		}
-		ImGui::EndMainMenuBar();
-	}
-}
 
 class Display
 {
@@ -95,7 +75,47 @@ void UpdateDrawFrame(void* userData)
 	ClearBackground(DARKGRAY);
 
 	rlImGuiBegin();
-	DoMainMenu();
+	if (ImGui::BeginMainMenuBar())
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("New"))
+			{
+			}
+			if (ImGui::MenuItem("Open", "Ctrl+O"))
+			{
+			}
+			ImGui::Separator();
+			if (ImGui::MenuItem("Save", "Ctrl+S"))
+			{
+			}
+			if (ImGui::MenuItem("Save As.."))
+			{
+			}
+#ifndef PLATFORM_WEB
+			ImGui::Separator();
+			if (ImGui::MenuItem("Exit"))
+				Quit = true;
+#endif // PLATFORM_WEB
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
+	}
+
+	auto drawArrow = [](ImVec2 position, ImU32 color, float length, float angle)
+		{
+			auto drawList = ImGui::GetWindowDrawList();
+			angle = angle * DEG2RAD;
+			ImVec2 secondPoint = { position.x + length * sin(angle), position.y - length * cos(angle) };
+			drawList->AddLine(position, secondPoint, color, 1.0f);
+
+			// Draw arrow head with lines
+			ImVec2 arrowHead1 = { secondPoint.x + 10 * cos(angle + PI / 4 + PI / 2), secondPoint.y + 10 * sin(angle + PI / 4 + PI / 2) };
+			ImVec2 arrowHead2 = { secondPoint.x + 10 * cos(angle - PI / 4 + PI / 2), secondPoint.y + 10 * sin(angle - PI / 4 + PI / 2) };
+			drawList->AddLine(secondPoint, arrowHead1, color, 1.0f);
+			drawList->AddLine(secondPoint, arrowHead2, color, 1.0f);
+		};
+
 
 	if (ImGuiDemoOpen)
 		ImGui::ShowDemoWindow(&ImGuiDemoOpen);
@@ -146,32 +166,125 @@ void UpdateDrawFrame(void* userData)
 	auto maxHeight = ImGui::GetContentRegionMax();
 	auto halfHeight = maxHeight.y / 2 - 40;
 
+	int hoveringImage = -1;
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 	ImGui::BeginChild("View", ImVec2(halfHeight * 2 + 48, 0), true, ImGuiWindowFlags_::ImGuiWindowFlags_NoScrollbar);
 	ImGui::PopStyleVar();
 	ImGui::BeginChild("Camera", ImVec2(halfHeight + 20, halfHeight + 35), true);
 	ImGui::Text("Perspective");
+	auto perspectivePos = ImGui::GetCursorScreenPos();
+	auto p = perspectivePos;
 	ImGui::Image((ImTextureID)&perspectiveTexture.texture, ImVec2(halfHeight, halfHeight), ImVec2(0, 1), ImVec2(1, 0));
+	if (ImGui::IsItemHovered())
+		hoveringImage = 0;
+	p.y = p.y + halfHeight - 10;
+	p.x += 10;
+
+
 	ImGui::EndChild();
 	ImGui::SameLine();
 	ImGui::BeginChild("TopChild", ImVec2(halfHeight + 20, halfHeight + 35), true);
 	ImGui::Text("Top");
+	p = ImGui::GetCursorScreenPos();
+	auto topPos = p;
 	ImGui::Image((ImTextureID)&topTexture.texture, ImVec2(halfHeight, halfHeight), ImVec2(0, 1), ImVec2(1, 0));
+	if (ImGui::IsItemHovered())
+		hoveringImage = 1;
+	p.y = p.y + halfHeight - 10;
+	p.x += 10;
+	drawArrow(p, IM_COL32(255, 0, 0, 255), 40, 0);
+	drawArrow(p, IM_COL32(0, 0, 255, 255), 40, 90);
 	ImGui::EndChild();
 	ImGui::BeginChild("FrontChild", ImVec2(halfHeight + 20, halfHeight + 35), true);
 	ImGui::Text("Front");
+	p = ImGui::GetCursorScreenPos();
+	auto frontPos = p;
 	ImGui::Image((ImTextureID)&frontTexture.texture, ImVec2(halfHeight, halfHeight), ImVec2(0, 1), ImVec2(1, 0));
+	if (ImGui::IsItemHovered())
+		hoveringImage = 2;
+	p.y = p.y + halfHeight - 10;
+	p.x += 10;
+	drawArrow(p, IM_COL32(0, 255, 0, 255), 40, 0);
+	drawArrow(p, IM_COL32(255, 0, 0, 255), 40, 90);
 	ImGui::EndChild();
 	ImGui::SameLine();
 	ImGui::BeginChild("RightChild", ImVec2(halfHeight + 20, halfHeight + 35), true);
 	ImGui::Text("Right");
+	p = ImGui::GetCursorScreenPos();
+	auto rightPos = p;
 	ImGui::Image((ImTextureID)&rightTexture.texture, ImVec2(halfHeight, halfHeight), ImVec2(0, 1), ImVec2(1, 0));
+	if (ImGui::IsItemHovered())
+		hoveringImage = 3;
+	p.y = p.y + halfHeight - 10;
+	p.x += 10;
+	drawArrow(p, IM_COL32(0, 255, 0, 255), 40, 0);
+	drawArrow(p, IM_COL32(0, 0, 255, 255), 40, 90);
+
 	ImGui::EndChild();
 	ImGui::EndChild();
 
+	float mouseWheel = ImGui::GetIO().MouseWheel;
+	if (mouseWheel != 0 && hoveringImage != -1)
+	{
+		auto& camera = hoveringImage == 0 ? project->camera : hoveringImage == 1 ? project->topCamera : hoveringImage == 2 ? project->frontCamera : project->rightCamera;
+		camera.fovy += mouseWheel * 2;
+		if (camera.fovy < 1)
+			camera.fovy = 1;
+		if (camera.fovy > 179)
+			camera.fovy = 179;
+	}
+
+	static int selectedDisplay = -1;
+
+	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && hoveringImage != -1)
+	{
+		auto& camera = hoveringImage == 0 ? project->camera : hoveringImage == 1 ? project->topCamera : hoveringImage == 2 ? project->frontCamera : project->rightCamera;
+
+		auto mousePos = GetMousePosition();
+
+		if (hoveringImage == 0)
+		{
+			mousePos.y -= perspectivePos.y;
+			mousePos.x -= perspectivePos.x;
+		}
+		else if (hoveringImage == 1)
+		{
+			mousePos.y -= topPos.y;
+			mousePos.x -= topPos.x;
+		}
+		else if (hoveringImage == 2)
+		{
+			mousePos.y -= frontPos.y;
+			mousePos.x -= frontPos.x;
+		}
+		else if (hoveringImage == 3)
+		{
+			mousePos.y -= rightPos.y;
+			mousePos.x -= rightPos.x;
+		}
+
+		Ray ray = GetMouseRay(mousePos, camera);
+
+		int index = 0;
+		for (auto& display : displays)
+		{
+			// Create bounding box for display
+			Vector3 min = { display.position.x - display.scale.x / 2, display.position.y - display.scale.y / 2, display.position.z - display.scale.z / 2 };
+			Vector3 max = { display.position.x + display.scale.x / 2, display.position.y + display.scale.y / 2, display.position.z + display.scale.z / 2 };
+			BoundingBox cube = { min, max };
+			// Check collision between ray and box
+			RayCollision collision = GetRayCollisionBox(ray, cube);
+			if (collision.hit)
+			{
+				selectedDisplay = index;
+				break;
+			}
+			index++;
+		}
+	}
+
 	ImGui::SameLine();
 	ImGui::BeginChild("Options", ImVec2(400, 0), true);
-	static int selectedDisplay = -1;
 
 	ImGui::DragFloat3("Eye Position", (float*)&eyePosition, 0.1f);
 
@@ -179,7 +292,8 @@ void UpdateDrawFrame(void* userData)
 	{
 		for (int i = 0; i < displays.size(); i++)
 		{
-			if (ImGui::Selectable(std::to_string(i).c_str(), selectedDisplay == i))
+			std::string label = "Display " + std::to_string(i);
+			if (ImGui::Selectable(label.c_str(), selectedDisplay == i))
 				selectedDisplay = i;
 		}
 		ImGui::EndListBox();
@@ -197,6 +311,11 @@ void UpdateDrawFrame(void* userData)
 
 	if (selectedDisplay >= 0 && selectedDisplay < displays.size())
 	{
+		float size = 200;
+		float aspectRatio = 1 / 2;
+		ImGui::DragFloat("Size", &size, 0.1f, 0.1f, 100.0f);
+		ImGui::DragFloat("Aspect Ratio", &aspectRatio, 0.01f, 0.01f, 10.0f);
+
 		ImGui::DragFloat3("Position", (float*)&displays[selectedDisplay].position, 0.1f);
 		ImGui::DragFloat3("Scale", (float*)&displays[selectedDisplay].scale, 0.1f);
 		ImGui::DragFloat3("Rotation", (float*)&displays[selectedDisplay].rotation, 0.1f);
