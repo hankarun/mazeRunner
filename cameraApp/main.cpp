@@ -4,6 +4,7 @@
 #include "imgui.h"
 #include "rlImGui.h"
 #include "rlImGuiColors.h"
+#include "rlgl.h"
 
 #include <string>
 #include <vector>
@@ -71,14 +72,21 @@ public:
 	}
 
 	void draw()
-	{
-		DrawCubeWires(position, scale.x, scale.y, scale.z, RED);
+	{		
+		rlPushMatrix();
+		rlTranslatef(position.x, position.y, position.z);
+		rlRotatef(rotation.x, 1, 0, 0);
+		rlRotatef(rotation.y, 0, 1, 0);
+		rlRotatef(rotation.z, 0, 0, 1);
+		DrawCubeWires({0}, scale.x, scale.y, scale.z, RED);
+		rlPopMatrix();
 	}
 
 	bool Open = true;
 
 	Vector3 position = {};
-	Vector3 scale = { 1,1, 1 };
+	Vector3 scale = { 1, 1, 0.1 };
+	Vector3 rotation = {0, 0, 0};
 };
 
 int main(int argc, char* argv[])
@@ -127,8 +135,6 @@ int main(int argc, char* argv[])
 			ImGui::ShowDemoWindow(&ImGuiDemoOpen);
 
 		auto drawScene = [&]() {
-			//DrawCubeWires(cubePosition, 2.0f, 2.0f, 2.0f, RED);
-			//DrawCylinderWires(cylinderPosition, 1.0f, 2.0f, 1.0f, 4, DARKBLUE);
 			for (auto& display : displays)
 				display.draw();
 			DrawGrid(10, 1.0f);
@@ -205,7 +211,7 @@ int main(int argc, char* argv[])
 		}
 		if (ImGui::Button("Add"))
 		{
-			displays.emplace_back(Vector3{ 0,0,0 }, Vector3{ 1,1,1 });
+			displays.emplace_back(Vector3{ 0,0,0 }, Vector3{ 1,1,0.1f });
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Remove"))
@@ -218,6 +224,7 @@ int main(int argc, char* argv[])
 		{
 			ImGui::DragFloat3("Position", (float*)&displays[selectedDisplay].position, 0.1f);
 			ImGui::DragFloat3("Scale", (float*)&displays[selectedDisplay].scale, 0.1f);
+			ImGui::DragFloat3("Rotation", (float*)&displays[selectedDisplay].rotation, 0.1f);
 		}
 
 		ImGui::EndChild();
