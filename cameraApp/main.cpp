@@ -5,90 +5,12 @@
 #include "rlImGui.h"
 #include "rlImGuiColors.h"
 
-#include <game.h>
-#include <gamedrawer.h>
+#include <string>
+#include <vector>
 
 bool Quit = false;
 
 bool ImGuiDemoOpen = false;
-
-class DocumentWindow
-{
-public:
-	bool Open = false;
-
-	RenderTexture ViewTexture;
-
-	virtual void Setup() = 0;
-	virtual void Shutdown() = 0;
-	virtual void Show() = 0;
-	virtual void Update() = 0;
-
-	bool Focused = false;
-};
-
-class MazeViewerWindow : public DocumentWindow
-{
-public:
-	MazeViewerWindow()
-		: game(800, 800) {}
-	virtual void Setup() override
-	{
-		ViewTexture = LoadRenderTexture(GetScreenWidth(), GetScreenHeight());
-
-		game.init();
-		game.updateCanvasSize(GetScreenWidth(), GetScreenHeight());
-	}
-
-	virtual void Shutdown() override
-	{
-	}
-
-	virtual void Show() override
-	{
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		ImGui::SetNextWindowSizeConstraints(ImVec2(400, 400), ImVec2((float)GetScreenWidth(), (float)GetScreenHeight()));
-
-		if (ImGui::Begin("Maze View", 0, ImGuiWindowFlags_NoScrollbar))
-		{
-			Focused = ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
-
-			ImVec2 size = ImGui::GetContentRegionAvail();
-
-			if (ViewTexture.texture.width != size.x || ViewTexture.texture.height != size.y)
-			{
-				UnloadRenderTexture(ViewTexture);
-				ViewTexture = LoadRenderTexture(size.x, size.y);
-				game.updateCanvasSize(size.x, size.y);
-			}
-
-			Rectangle viewRect = { 0 };
-			viewRect.x = 0;
-			viewRect.y = 0;
-			viewRect.width = size.x;
-			viewRect.height = -size.y;
-
-			// draw the view
-			ImGui::Image((ImTextureID)&ViewTexture.texture, ImVec2(float(size.x), float(size.y)));
-		}
-		ImGui::End();
-
-		ImGui::PopStyleVar();
-	}
-
-	virtual void Update() override
-	{
-		game.update(0);
-		BeginTextureMode(ViewTexture);
-		ClearBackground(SKYBLUE);
-		GameDrawer drawer(&game);
-		drawer.draw(&game.board, game.showColor);
-		drawer.draw(&game.boardGenerator);
-		EndTextureMode();
-	}
-
-	maze::Game game;
-};
 
 void DoMainMenu()
 {
@@ -112,76 +34,26 @@ void DoMainMenu()
 	}
 }
 
-void drawInfo(maze::Game& game)
-{
-	ImGui::SetNextWindowSizeConstraints(ImVec2(400, 400), ImVec2((float)GetScreenWidth(), (float)GetScreenHeight()));
-	if (ImGui::Begin("Control"))
-	{
-		ImGui::BeginTabBar("Control");
-		if (ImGui::BeginTabItem("Settings"))
-		{
-			ImGui::Checkbox("Show Color", &game.showColor);
-			ImGui::Checkbox("Loop", &game.loop);
-			ImGui::DragInt("Speed", &game.speed, 1.0f, 0, 100);
-			ImGui::DragInt("Cell Size", &game.cellSize, 1.0f, 0, 100);
-			ImGui::EndTabItem();
-		}
-		if (ImGui::BeginTabItem("Generate"))
-		{
-			if (ImGui::Button("Finish Generating"))
-			{
-				if (game.boardGenerator.isFinished())
-				{
-					game.reset();
-				}
-
-				game.boardGenerator.finish(&game.board);
-			}
-			if (ImGui::Button("Reset"))
-			{
-				game.reset();
-				game.speed = 1;
-			}
-			ImGui::EndTabItem();
-		}
-		if (ImGui::BeginTabItem("Solve"))
-		{
-			if (ImGui::Button("Start Solve"))
-			{
-			}
-			if (ImGui::Button("Finish Solve"))
-			{
-			}
-			ImGui::EndTabItem();
-		}
-		ImGui::EndTabBar();
-	}
-	ImGui::End();
-}
-
 void UpdateDrawFrame(void* userData)
 {
-	auto mazeView = (MazeViewerWindow*)userData;
-	mazeView->Update();
+	//BeginDrawing();
+	//ClearBackground(DARKGRAY);
 
-	BeginDrawing();
-	ClearBackground(DARKGRAY);
+	//rlImGuiBegin();
+	//DoMainMenu();
 
-	rlImGuiBegin();
-	DoMainMenu();
+	//if (ImGuiDemoOpen)
+	//	ImGui::ShowDemoWindow(&ImGuiDemoOpen);
 
-	if (ImGuiDemoOpen)
-		ImGui::ShowDemoWindow(&ImGuiDemoOpen);
+	//if (mazeView->Open)
+	//{
+	//	drawInfo(mazeView->game);
+	//	mazeView->Show();
+	//}
 
-	if (mazeView->Open)
-	{
-		drawInfo(mazeView->game);
-		mazeView->Show();
-	}
+	//rlImGuiEnd();
 
-	rlImGuiEnd();
-
-	EndDrawing();
+	//EndDrawing();
 }
 
 #ifdef PLATFORM_WEB
@@ -189,6 +61,25 @@ void UpdateDrawFrame(void* userData)
 #else
 #pragma comment(lib, "winmm.lib")
 #endif
+
+class Display
+{
+public:
+	Display(Vector3 position, Vector3 scale)
+		: position(position), scale(scale)
+	{
+	}
+
+	void draw()
+	{
+		DrawCubeWires(position, scale.x, scale.y, scale.z, RED);
+	}
+
+	bool Open = true;
+
+	Vector3 position = {};
+	Vector3 scale = { 1,1, 1 };
+};
 
 int main(int argc, char* argv[])
 {
@@ -221,6 +112,8 @@ int main(int argc, char* argv[])
 	Vector3 cubePosition = { 0.0f, 0.0f, 0.0f };
 	Vector3 cylinderPosition = { 4.0f, 0.0f, -2.0f };
 
+	std::vector<Display> displays;
+
 	// Main game loop
 	while (!WindowShouldClose() && !Quit)    // Detect window close button or ESC key
 	{
@@ -234,8 +127,10 @@ int main(int argc, char* argv[])
 			ImGui::ShowDemoWindow(&ImGuiDemoOpen);
 
 		auto drawScene = [&]() {
-			DrawCubeWires(cubePosition, 2.0f, 2.0f, 2.0f, RED);
-			DrawCylinderWires(cylinderPosition, 1.0f, 2.0f, 1.0f, 4, DARKBLUE);
+			//DrawCubeWires(cubePosition, 2.0f, 2.0f, 2.0f, RED);
+			//DrawCylinderWires(cylinderPosition, 1.0f, 2.0f, 1.0f, 4, DARKBLUE);
+			for (auto& display : displays)
+				display.draw();
 			DrawGrid(10, 1.0f);
 			};
 
@@ -296,9 +191,35 @@ int main(int argc, char* argv[])
 		ImGui::EndChild();
 
 		ImGui::SameLine();
-		ImGui::BeginChild("Options");
-		ImGui::DragFloat3("Cube Position", (float*)&cubePosition, 0.1f);
-		ImGui::DragFloat3("Cylinder Position", (float*)&cylinderPosition, 0.1f);
+		ImGui::SetCursorPosY(ImGui::GetFrameHeightWithSpacing());
+		ImGui::BeginChild("Options", ImVec2(400, 0), true);
+		static int selectedDisplay = -1;
+		if (ImGui::BeginListBox("Displays"))
+		{
+			for (int i = 0; i < displays.size(); i++)
+			{
+				if (ImGui::Selectable(std::to_string(i).c_str(), selectedDisplay == i))
+					selectedDisplay = i;
+			}
+			ImGui::EndListBox();
+		}
+		if (ImGui::Button("Add"))
+		{
+			displays.emplace_back(Vector3{ 0,0,0 }, Vector3{ 1,1,1 });
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Remove"))
+		{
+			if (selectedDisplay >= 0 && selectedDisplay < displays.size())
+				displays.erase(displays.begin() + selectedDisplay);
+		}
+
+		if (selectedDisplay >= 0 && selectedDisplay < displays.size())
+		{
+			ImGui::DragFloat3("Position", (float*)&displays[selectedDisplay].position, 0.1f);
+			ImGui::DragFloat3("Scale", (float*)&displays[selectedDisplay].scale, 0.1f);
+		}
+
 		ImGui::EndChild();
 
 		ImGui::End();
