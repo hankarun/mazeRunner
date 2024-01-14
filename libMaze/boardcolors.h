@@ -2,6 +2,7 @@
 #include "common.h"
 
 #include <unordered_map>
+#include <vector>
 
 namespace maze {
 	class Board;
