@@ -17,14 +17,16 @@ void GameDrawer::draw(maze::BoardSolver* solver)
 	}
 }
 
+
 void GameDrawer::draw(maze::Board* board, bool showColor)
 {
 	auto colorer = board->getColorer();
 	int cellSize = game->cellSize;
+
 	for (const auto& cell : board->cells)
 	{
-		float x = cell.position.x * cellSize;
-		float y = cell.position.y * cellSize;
+		float x = cell.position.x * cellSize + offsetX;
+		float y = cell.position.y * cellSize + offsetY;
 
 		if (cell.visited)
 		{
@@ -53,7 +55,7 @@ void GameDrawer::draw(maze::Board* board, bool showColor)
 		255
 	};
 	int targetSize = cellSize - 4;
-	DrawRectangle(board->target.x * cellSize + 2, board->target.y * cellSize + 2, targetSize, targetSize, targetColor);
+	DrawRectangle(board->target.x * cellSize + 2 + offsetX, board->target.y * cellSize + 2 + offsetY, targetSize, targetSize, targetColor);
 
 	targetColor = Color{
 		0,
@@ -64,7 +66,7 @@ void GameDrawer::draw(maze::Board* board, bool showColor)
 	int homeIndex = board->home.x + board->home.y * board->width;
 	const auto& homeCell = board->cells.at(homeIndex);
 	int homeSize = cellSize - 4;
-	DrawRectangle(homeCell.position.x * cellSize + 2, homeCell.position.y * cellSize + 2, homeSize, homeSize, targetColor);
+	DrawRectangle(homeCell.position.x * cellSize + 2 + offsetX, homeCell.position.y * cellSize + 2 + offsetY, homeSize, homeSize, targetColor);
 }
 
 void GameDrawer::draw(maze::BoardGenerator* generator)
@@ -74,8 +76,8 @@ void GameDrawer::draw(maze::BoardGenerator* generator)
 	if (!generator->traverse.empty())
 	{
 		auto top = generator->traverse.top();
-		float x = top->position.x * cellSize;
-		float y = top->position.y * cellSize;
+		float x = top->position.x * cellSize + offsetX;
+		float y = top->position.y * cellSize + offsetY;
 		DrawRectangle(x, y, cellSize, cellSize, GREEN);
 	}
 }

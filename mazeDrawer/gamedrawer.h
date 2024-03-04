@@ -6,6 +6,10 @@
 #include "boardgenerator.h"
 #include "game.h"
 
+
+constexpr int offsetX = 290;
+constexpr int offsetY = 10;
+
 class GameDrawer
 {
 public:

@@ -19,17 +19,20 @@
 
 void drawInfo(maze::Game* game)
 {
-	DrawRectangle(20, 50, 250, 180, Fade(SKYBLUE, 0.9f));
-	DrawRectangleLines(20, 50, 250, 180, BLUE);
+	DrawRectangle(20, offsetY, 250, 500, Fade(SKYBLUE, 0.9f));
+	DrawRectangleLines(20, offsetY, 250, 500, BLUE);
 
-	GuiCheckBox(Rectangle{ 24, 56, 24, 24 }, "Show Color", &game->showColor);
-	GuiCheckBox(Rectangle{ 24, 88, 24, 24 }, "Loop", &game->loop);
+	GuiCheckBox(Rectangle{ 24, offsetY + 6, 24, 24 }, "Show Color", &game->showColor);
+	GuiCheckBox(Rectangle{ 24, offsetY + 38, 24, 24 }, "Loop", &game->loop);
 	static bool ValueBOx004EditMode = false;
 	static bool ValueBOx005EditMode = false;
-	if (GuiSpinner(Rectangle{ 104, 120, 120, 24 }, "Speed", &game->speed, 0, 100, ValueBOx004EditMode)) ValueBOx004EditMode = !ValueBOx004EditMode;
-	if (GuiSpinner(Rectangle{ 104, 184, 120, 24 }, "Cell Size", &game->cellSize, 0, 100, ValueBOx005EditMode)) ValueBOx005EditMode = !ValueBOx005EditMode;
+	if (GuiSpinner(Rectangle{ 104, offsetY + 60, offsetY + 60, 24 }, "Speed", &game->speed, 0, 100, ValueBOx004EditMode)) ValueBOx004EditMode = !ValueBOx004EditMode;
+	int cellSize = game->cellSize;
+	GuiSpinner(Rectangle{ 104, offsetY + 90, offsetY + 90, 24 }, "Cell Size", &game->cellSize, 0, 100, ValueBOx005EditMode);
+	if (cellSize != game->cellSize)
+		game->reset();
 
-	if (GuiButton(Rectangle{ 112, 152, 112, 24 }, "Finish Generating"))
+	if (GuiButton(Rectangle{ 112, offsetY + 120, 112, 24 }, "Finish Generating"))
 	{
 		if (game->boardGenerator.isFinished())
 		{
@@ -38,7 +41,7 @@ void drawInfo(maze::Game* game)
 
 		game->boardGenerator.finish(&game->board);
 	}
-	if (GuiButton(Rectangle{ 24, 152, 80, 24 }, "Reset"))
+	if (GuiButton(Rectangle{ 24, offsetY + 120, 80, 24 }, "Reset"))
 	{
 		game->reset();
 		game->speed = 1;
@@ -48,7 +51,7 @@ void drawInfo(maze::Game* game)
 void UpdateDrawFrame(void* userData)
 {
 	auto game = (maze::Game*)userData;
-	game->updateCanvasSize(GetScreenWidth(), GetScreenHeight());
+	game->updateCanvasSize(500, 500);
 	game->update(0);
 
 	BeginDrawing();
@@ -67,7 +70,7 @@ void UpdateDrawFrame(void* userData)
 		drawInfo(game);
 
 	EndDrawing();
-}
+	}
 
 #ifdef PLATFORM_WEB
 #include <emscripten/emscripten.h>
@@ -78,7 +81,7 @@ void UpdateDrawFrame(void* userData)
 int main(int argc, char* argv[])
 {
 	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_RESIZABLE);
-	InitWindow(800, 800, "MazeRunner");
+	InitWindow(800, 520, "MazeRunner");
 
 	maze::Game game(800, 800);
 	game.init();
