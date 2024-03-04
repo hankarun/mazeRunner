@@ -10,7 +10,7 @@ namespace maze
 			for (int i = 0; i < width; ++i)
 			{
 				Cell cell;
-				cell.position = { (float)i, (float)j };
+				cell.position = { i, j };
 				cells.push_back(cell);
 			}
 		}
@@ -30,7 +30,7 @@ namespace maze
 		if (p->position.y > 0)
 		{
 			int index = p->position.x + (p->position.y - 1) * width;
-			if (!cells.at(index).visited)
+			if (!cells.at(index).isVisited())
 				neighbours.push_back(&cells[index]);
 		}
 
@@ -38,7 +38,7 @@ namespace maze
 		if (p->position.y < (height - 1))
 		{
 			int index = p->position.x + (p->position.y + 1) * width;
-			if (!cells.at(index).visited)
+			if (!cells.at(index).isVisited())
 				neighbours.push_back(&cells[index]);
 		}
 
@@ -46,7 +46,7 @@ namespace maze
 		if (p->position.x > 0)
 		{
 			int index = p->position.x - 1 + p->position.y * width;
-			if (!cells.at(index).visited)
+			if (!cells.at(index).isVisited())
 				neighbours.push_back(&cells[index]);
 		}
 
@@ -54,7 +54,7 @@ namespace maze
 		if (p->position.x < (width - 1))
 		{
 			int index = p->position.x + 1 + p->position.y * width;
-			if (!cells.at(index).visited)
+			if (!cells.at(index).isVisited())
 				neighbours.push_back(&cells[index]);
 		}
 

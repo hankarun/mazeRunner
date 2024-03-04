@@ -7,11 +7,15 @@ namespace maze
 	{
 	public:
 		Position position = {};
-		bool visited = false;
+		char data = 0x0F;
+		bool getWall(int index) const;
+		void setWall(int index, bool value);
+		void setVisited(bool value);
+		bool isVisited() const;
 		// . 1 .
 		// 2   3
 		// . 4 .
-		std::array<bool, 4> walls = { true, true, true, true };
+		
 		// . 0 .
 		// 1   2
 		// . 3 .

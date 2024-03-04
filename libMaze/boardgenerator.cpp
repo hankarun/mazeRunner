@@ -1,6 +1,8 @@
 #include "boardgenerator.h"
 
 namespace maze {
+	constexpr int maxGroupId = 1000;
+
 	BoardGenerator::BoardGenerator() = default;
 
 	bool BoardGenerator::isFinished() const
@@ -17,14 +19,15 @@ namespace maze {
 	void BoardGenerator::init(Board* board)
 	{
 		traverse = std::stack<Cell*>();
-		float startCellX = rand() % (int)board->width;
-		float startCellY = rand() % (int)board->height;
+		int startCellX = rand() % (int)board->width;
+		int startCellY = rand() % (int)board->height;
 		board->home = { startCellX, startCellY };
 		float startIndex = board->toIndex(board->home);
-		board->cells[startIndex].visited = true;
+		board->cells[startIndex].setVisited(true);
 		traverse.push(&board->cells[startIndex]);
 
-		board->target = { float(rand() % (int)board->width), float(rand() % (int)board->height) };
+		board->target = { int(rand() % (int)board->width), int(rand() % (int)board->height) };
+		currentGroupId = 1;
 	}
 
 	void BoardGenerator::update(Board* board)
@@ -42,13 +45,13 @@ namespace maze {
 
 		if (!neighBours.empty())
 		{
-			board->getColorer()->groupIds.at(board->toIndex(currrent->position)) = currentGroupId;
+			board->getColorer()->setCellGroupId(board->toIndex(currrent->position), currentGroupId);
 			traverse.push(currrent);
 			int count = neighBours.size();
 			int lucky = rand() % count;
 			auto nextCell = neighBours[lucky];
-			nextCell->visited = true;
-			board->getColorer()->groupIds.at(board->toIndex(nextCell->position)) = currentGroupId;
+			nextCell->setVisited(true);
+			board->getColorer()->setCellGroupId(board->toIndex(nextCell->position), currentGroupId);
 			currrent->removeWalls(nextCell);
 			traverse.push(nextCell);
 		}
@@ -56,5 +59,7 @@ namespace maze {
 		{
 			currentGroupId++;
 		}
+
+		currentGroupId = currentGroupId % maxGroupId;
 	}
 }

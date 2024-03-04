@@ -19,16 +19,16 @@
 
 void drawInfo(maze::Game* game)
 {
-	DrawRectangle(20, offsetY, 250, 500, Fade(SKYBLUE, 0.9f));
-	DrawRectangleLines(20, offsetY, 250, 500, BLUE);
+	DrawRectangle(10, offsetY, 250, 500, Fade(SKYBLUE, 0.9f));
+	DrawRectangleLines(10, offsetY, 250, 500, BLUE);
 
-	GuiCheckBox(Rectangle{ 24, offsetY + 6, 24, 24 }, "Show Color", &game->showColor);
-	GuiCheckBox(Rectangle{ 24, offsetY + 38, 24, 24 }, "Loop", &game->loop);
+	GuiCheckBox(Rectangle{ 14, offsetY + 6, 14, 14 }, "Show Color", &game->showColor);
+	GuiCheckBox(Rectangle{ 14, offsetY + 38, 14, 14 }, "Loop", &game->loop);
 	static bool ValueBOx004EditMode = false;
 	static bool ValueBOx005EditMode = false;
-	if (GuiSpinner(Rectangle{ 104, offsetY + 60, offsetY + 60, 24 }, "Speed", &game->speed, 0, 100, ValueBOx004EditMode)) ValueBOx004EditMode = !ValueBOx004EditMode;
+	if (GuiSpinner(Rectangle{ 104, offsetY + 60, offsetY + 60, 14 }, "Speed", &game->speed, 0, 100, ValueBOx004EditMode)) ValueBOx004EditMode = !ValueBOx004EditMode;
 	int cellSize = game->cellSize;
-	GuiSpinner(Rectangle{ 104, offsetY + 90, offsetY + 90, 24 }, "Cell Size", &game->cellSize, 0, 100, ValueBOx005EditMode);
+	GuiSpinner(Rectangle{ 104, offsetY + 90, offsetY + 90, 14 }, "Cell Size", &game->cellSize, 0, 100, ValueBOx005EditMode);
 	if (cellSize != game->cellSize)
 		game->reset();
 
@@ -80,8 +80,8 @@ void UpdateDrawFrame(void* userData)
 
 int main(int argc, char* argv[])
 {
-	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | FLAG_WINDOW_RESIZABLE);
-	InitWindow(800, 520, "MazeRunner");
+	SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
+	InitWindow(780, 520, "MazeRunner");
 
 	maze::Game game(800, 800);
 	game.init();

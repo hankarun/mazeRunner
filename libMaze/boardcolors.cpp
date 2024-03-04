@@ -7,6 +7,7 @@ namespace maze {
 	{
 		groupIds.resize(board->cells.size());
 		std::fill(groupIds.begin(), groupIds.end(), 0);
+		groupColors.clear();
 	}
 
 	Color BoardColor::getGroupColor(int index)
@@ -21,5 +22,9 @@ namespace maze {
 			return groupColors[groupIds.at(index)];
 		}
 		return result->second;
+	}
+	void BoardColor::setCellGroupId(int index, int groupId)
+	{
+		groupIds.at(index) = groupId;
 	}
 }

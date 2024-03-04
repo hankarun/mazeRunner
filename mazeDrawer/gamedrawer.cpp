@@ -28,7 +28,7 @@ void GameDrawer::draw(maze::Board* board, bool showColor)
 		float x = cell.position.x * cellSize + offsetX;
 		float y = cell.position.y * cellSize + offsetY;
 
-		if (cell.visited)
+		if (cell.isVisited())
 		{
 			Color c(WHITE);
 			if (showColor)
@@ -38,13 +38,13 @@ void GameDrawer::draw(maze::Board* board, bool showColor)
 			}
 			DrawRectangle(x, y, cellSize, cellSize, c);
 		}
-		if (cell.walls[0])
+		if (cell.getWall(0))
 			DrawLine(x, y, x + cellSize, y, BLACK);
-		if (cell.walls[1])
+		if (cell.getWall(1))
 			DrawLine(x, y, x, y + cellSize, BLACK);
-		if (cell.walls[2])
+		if (cell.getWall(2))
 			DrawLine(x + cellSize, y, x + cellSize, y + cellSize, BLACK);
-		if (cell.walls[3])
+		if (cell.getWall(3))
 			DrawLine(x, y + cellSize, x + cellSize, y + cellSize, BLACK);
 	}
 

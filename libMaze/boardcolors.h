@@ -14,6 +14,8 @@ namespace maze {
 
 		Color getGroupColor(int index);
 
+		void setCellGroupId(int index, int groupId);
+	private:
 		std::vector<int> groupIds;
 		std::unordered_map<int, Color> groupColors;
 	};
