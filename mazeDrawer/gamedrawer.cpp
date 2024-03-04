@@ -52,7 +52,8 @@ void GameDrawer::draw(maze::Board* board, bool showColor)
 		0,
 		255
 	};
-	DrawRectangle(board->target.x * cellSize, board->target.y * cellSize, cellSize, cellSize, targetColor);
+	int targetSize = cellSize - 4;
+	DrawRectangle(board->target.x * cellSize + 2, board->target.y * cellSize + 2, targetSize, targetSize, targetColor);
 
 	targetColor = Color{
 		0,
@@ -62,7 +63,8 @@ void GameDrawer::draw(maze::Board* board, bool showColor)
 	};
 	int homeIndex = board->home.x + board->home.y * board->width;
 	const auto& homeCell = board->cells.at(homeIndex);
-	DrawRectangle(homeCell.position.x * cellSize, homeCell.position.y * cellSize, cellSize, cellSize, targetColor);
+	int homeSize = cellSize - 4;
+	DrawRectangle(homeCell.position.x * cellSize + 2, homeCell.position.y * cellSize + 2, homeSize, homeSize, targetColor);
 }
 
 void GameDrawer::draw(maze::BoardGenerator* generator)

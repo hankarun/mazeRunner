@@ -54,9 +54,17 @@ void UpdateDrawFrame(void* userData)
 	BeginDrawing();
 	ClearBackground(DARKGRAY);
 	GameDrawer drawer(game);
-	drawer.draw(&game->board, game->showColor, &game->colorer);
+	drawer.draw(&game->board, game->showColor);
 	drawer.draw(&game->boardGenerator);
-	drawInfo(game);
+
+	static bool showInfo = true;
+	if (IsKeyPressed(KEY_LEFT_CONTROL))
+	{
+		showInfo = !showInfo;
+	}
+
+	if (showInfo)
+		drawInfo(game);
 
 	EndDrawing();
 }
